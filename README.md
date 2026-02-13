@@ -1,39 +1,28 @@
-# 🌌 Nega Client - Web Preview
+# ⚡ Stealth Client - Advanced Web Interface
 
-Ein moderner, interaktiver Minecraft Cheat-Client Web-Vorschau, optimiert für Touch-Bedienung auf dem iPad und Desktop-Browser. Inspiriert vom klassischen LiquidBounce-Design, bietet **Nega** eine flüssige GUI und ein umfangreiches Modul-System.
+Ein hochperformantes Web-Interface für Minecraft-Utility-Mod-Konzepte. Der **Stealth Client** besticht durch ein minimalistisches Design, flüssige Animationen und eine intuitive Bedienung auf iPad und PC.
 
 
 
-## ✨ Features
+## 🛠 Features
 
-* **Interaktive ClickGUI:** Vollständig verschiebbare Fenster für jede Modul-Kategorie.
-* **Dropdown-System:** Jede Kategorie kann ein- und ausgeklappt werden, um Platz zu sparen.
-* **Settings-Menü:** * **Doppelklick (PC)** oder **Long-Press (iPad)** öffnet detaillierte Einstellungen.
-    * Farbauswahl (Color Picker) für ESP und Tracers.
-    * Slider für Range, Speed und CPS-Werte.
-* **Friends-System:** * Füge Freunde per Username hinzu.
-    * Freunde werden im ESP gesondert behandelt (Ignorieren-Funktion).
-* **HUD Display:** Live-Anzeige der aktiven Module am rechten Bildschirmrand.
-* **Responsive Design:** Optimiert für Safari auf iPad und alle gängigen Desktop-Browser.
+* **Adaptive ClickGUI:** Vollständig modulares Fenster-System.
+* **Smart Dropdown:** Kategorien lassen sich platzsparend einklappen.
+* **Deep Settings:** * **PC:** Doppelklick für Moduleinstellungen.
+    * **iPad:** Long-Press (0.7s) für mobiles Konfigurationsmenü.
+* **Social Manager:** Integriertes Friends-System zur selektiven ESP-Filterung.
+* **Live HUD:** Echtzeit-Anzeige aller aktiven Funktionen.
 
-## 🚀 Live Demo
+## 📱 Steuerung
 
-Du kannst die GUI direkt in deinem Browser testen:
-👉 **[DEIN-LINK-HIER.github.io/Nega-Client]**
-*(Ersetze dies durch deinen GitHub Pages Link)*
+* **Verschieben:** Header halten & ziehen.
+* **Toggle:** Einfacher Klick/Tipp auf das Modul.
+* **Menü:** Klick auf den Kategorienamen.
+* **Optionen:** Doppelklick oder langes Halten auf dem Modul.
 
-## 🛠 Bedienung
+## 🔗 Live Vorschau
+Besuche die offizielle Preview hier:
+👉 **https://bee601.github.io/Client/**
 
-| Aktion | iPad (Touch) | Desktop (PC) |
-| :--- | :--- | :--- |
-| **Fenster verschieben** | Header gedrückt halten & ziehen | Header mit Maus ziehen |
-| **Menü klappen** | Einfacher Tipp auf Header | Linksklick auf Header |
-| **Cheat Toggle** | Einfacher Tipp auf Modul | Linksklick auf Modul |
-| **Einstellungen** | 0.7s gedrückt halten | Doppelklick auf Modul |
-| **Suchen** | Tastatur-Eingabe oben | Tastatur-Eingabe oben |
-
-## 📂 Installation (für Entwickler)
-
-1. Repository klonen:
-   ```bash
-   git clone [https://github.com/DEIN-USER/Nega-Client.git](https://github.com/DEIN-USER/Nega-Client.git)
+---
+*Disclaimer: Dieses Projekt ist ein reines UI-Konzept zu Designzwecken.*
