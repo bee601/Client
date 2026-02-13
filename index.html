@@ -3,48 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stealth Client | Professional Settings Edition</title>
+    <title>Stealth Client | Custom Logic</title>
     <style>
-        :root { --main: #5865f2; --bg: #050505; --win: #0f0f0f; --brd: #222; --text: #eee; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; touch-action: none; }
+        :root { --main: #5865f2; --bg: #050505; --win: #0f0f0f; --brd: #222; }
+        body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; touch-action: none; }
         
         /* HUD */
         #hud { position: fixed; top: 15px; left: 15px; pointer-events: none; z-index: 50; }
-        .hud-mod { color: var(--main); font-weight: 900; font-size: 14px; text-shadow: 2px 2px #000; text-transform: uppercase; line-height: 1.2; }
+        .hud-mod { color: var(--main); font-weight: 900; font-size: 14px; text-shadow: 2px 2px #000; text-transform: uppercase; }
         
         /* TOP BAR */
         #top-bar { position: absolute; top: 15px; width: 100%; display: flex; justify-content: center; z-index: 100; }
-        .box { background: var(--win); border: 1px solid var(--brd); padding: 8px 15px; border-radius: 5px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        input[type="text"] { background: transparent; border: none; color: white; outline: none; width: 250px; font-family: monospace; font-size: 13px; }
+        .box { background: var(--win); border: 1px solid var(--brd); padding: 8px 15px; border-radius: 5px; }
+        input[type="text"] { background: transparent; border: none; color: white; outline: none; width: 250px; font-family: monospace; }
 
         /* WINDOWS */
-        .window { position: absolute; width: 180px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; box-shadow: 0 10px 30px #000; transition: border-color 0.3s; }
-        .window:hover { border-color: var(--main); }
-        .head { background: #000; padding: 12px; text-align: center; font-size: 10px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+        .window { position: absolute; width: 180px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; box-shadow: 0 10px 30px #000; }
+        .head { background: #000; padding: 12px; text-align: center; font-size: 10px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); text-transform: uppercase; display: flex; justify-content: space-between; }
         .window.collapsed .list { display: none; }
 
         .list { max-height: 350px; overflow-y: auto; scrollbar-width: none; }
-        .list::-webkit-scrollbar { display: none; }
-        .mod { padding: 10px 12px; font-size: 11px; color: #777; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        .mod:hover { background: #151515; color: #bbb; }
+        .mod { padding: 10px 12px; font-size: 11px; color: #777; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .mod.on { color: white; background: var(--main); font-weight: bold; }
-        .bind-hint { font-size: 8px; opacity: 0.7; background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 2px; }
+        .bind-hint { font-size: 8px; opacity: 0.6; }
 
         /* SETTINGS MODAL */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: #0c0c0c; border: 2px solid var(--main); padding: 25px; display: none; z-index: 2000; border-radius: 12px; box-shadow: 0 0 50px rgba(0,0,0,1); animation: pop 0.2s ease-out; }
-        @keyframes pop { from { transform: translate(-50%, -50%) scale(0.9); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
-        
-        .modal h3 { margin: 0 0 20px 0; color: var(--main); text-transform: uppercase; letter-spacing: 1px; font-size: 16px; border-bottom: 1px solid #222; padding-bottom: 10px; }
-        .row { display: flex; justify-content: space-between; margin: 15px 0; font-size: 13px; align-items: center; color: #ccc; }
-        .val-num { color: var(--main); font-weight: bold; min-width: 40px; text-align: right; font-family: monospace; background: #151515; padding: 2px 5px; border-radius: 3px; }
-        .btn { background: var(--main); border: none; color: white; width: 100%; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: filter 0.2s; }
-        .btn:active { filter: brightness(0.8); }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: #0c0c0c; border: 2px solid var(--main); padding: 25px; display: none; z-index: 2000; border-radius: 12px; }
+        .row { display: flex; justify-content: space-between; margin: 15px 0; font-size: 13px; align-items: center; }
+        .val-num { color: var(--main); font-weight: bold; min-width: 40px; text-align: right; }
+        .btn { background: var(--main); border: none; color: white; width: 100%; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; cursor: pointer; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: none; z-index: 1500; }
 
-        /* INPUTS */
-        input[type="range"] { width: 110px; accent-color: var(--main); cursor: pointer; }
-        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--main); cursor: pointer; }
-        .bind-btn { background: #1a1a1a; color: var(--main); border: 1px solid var(--main); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; min-width: 70px; }
+        input[type="range"] { width: 110px; accent-color: var(--main); }
+        input[type="color"] { border: none; width: 30px; height: 30px; background: none; cursor: pointer; }
+        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--main); }
     </style>
 </head>
 <body>
@@ -53,34 +45,60 @@
     <div class="overlay" id="blur" onclick="closeAll()"></div>
     
     <div id="top-bar">
-        <div class="box"><input type="text" id="cmd-in" placeholder="Suche oder %hclip 100..." onkeyup="handleCmd(event)"></div>
+        <div class="box"><input type="text" id="cmd-in" placeholder="Suche oder %command..." onkeyup="handleCmd(event)"></div>
     </div>
 
     <div class="modal" id="set-win">
-        <h3 id="set-title">Module Settings</h3>
+        <h3 id="set-title" style="margin:0 0 20px 0; color:var(--main); text-transform:uppercase;">Settings</h3>
         <div id="set-body"></div>
-        <div class="row" style="border-top: 1px solid #222; padding-top:15px; margin-top:20px;">
-            <span>Keyboard Bind</span>
-            <button id="bind-display" class="bind-btn" onclick="startBinding()">NONE</button>
+        <div class="row" style="border-top:1px solid #222; padding-top:15px;">
+            <span>Bind</span>
+            <button id="bind-display" style="background:#1a1a1a; color:var(--main); border:1px solid var(--main); padding:5px 10px;" onclick="startBinding()">NONE</button>
         </div>
-        <button class="btn" onclick="closeAll()">Save & Apply</button>
+        <button class="btn" onclick="closeAll()">Save</button>
     </div>
 
     <script>
-        // Massive Module List (200+ simulated categories)
+        // Individuelle Settings pro Modul
         const categories = {
-            "Combat": ["KillAura", "Velocity", "Reach", "Criticals", "TriggerBot", "AntiBot", "TPAura", "FastBow", "Aimbot", "AutoClicker", "AutoWeapon", "AutoTotem", "SmoothAim", "BowPredict", "AutoSoup", "InfiniteReach", "Regen", "NoFriends", "KeepSprint", "ArmorBreaker", "LegitAura", "HitboxExpander", "TargetStrafe"],
-            "Movement": ["Fly", "Speed", "Step", "LongJump", "Jesus", "Spider", "NoSlow", "AutoSprint", "VClip", "HClip", "SafeWalk", "Blink", "Phase", "HighJump", "Flight", "InventoryWalk", "Parkour", "FastLadder", "WallClimb", "Glide", "NoFall", "AntiVoid", "Scaffold", "Tower", "SpeedBridge"],
-            "Visuals": ["ESP", "Tracers", "Chams", "NameTags", "FullBright", "X-Ray", "Snaplines", "ChestESP", "Breadcrumbs", "ItemESP", "NoRender", "TracerLine", "Freecam", "ClickGUI", "Radar", "StorageESP", "BlockESP", "VoidESP", "MobESP", "ChunkESP", "SelectionBox", "PlayerList", "Scoreboard"],
-            "Player": ["AutoEat", "AutoTool", "AutoArmor", "ChestStealer", "InventoryManager", "AutoMine", "FastPlace", "FastBreak", "NoRotate", "AutoRelog", "AutoRespawn", "AutoFish", "Mucker", "AutoWalk", "AntiFire", "AntiCactus", "Zoot", "Derp", "SkinDerp", "NoPitch", "FastEat"],
-            "Exploit": ["Timer", "Disabler", "ServerCrash", "PacketFly", "NoClip", "AntiHunger", "PingSpoof", "Teleport", "CoordExploit", "CommandSpam", "GodMode", "AntiKnockback", "Infinity", "PortalGod", "LightningTrack", "BedAura", "CivBreak"],
-            "Misc": ["Spammer", "Annoyer", "ChatBypass", "NoteBot", "AutoConfig", "Protocol", "MidClick", "FancyChat", "AutoReply", "AutoGG", "FakePlayer", "NoWeather", "NoOverlay", "FastWorld", "AutoAd", "Translator"]
+            "Combat": [
+                { id: "aura", name: "KillAura", each: { Range: 4.2, CPS: 12, Walls: false, Multi: 1.0 } },
+                { id: "velo", name: "Velocity", each: { Horizontal: 0, Vertical: 0, Chance: 100 } },
+                { id: "crit", name: "Criticals", each: { Mode: 1.0, Delay: 0.1 } },
+                { id: "trig", name: "TriggerBot", each: { CPS: 10, Range: 3.8 } }
+            ],
+            "Movement": [
+                { id: "fly", name: "Fly", each: { Speed: 2.0, Vertical: 1.0, Damage: false } },
+                { id: "speed", name: "Speed", each: { Factor: 0.6, Jump: true } },
+                { id: "vclip", name: "VClip", each: { Distance: 5.0 } },
+                { id: "hclip", name: "HClip", each: { Distance: 5.0 } }
+            ],
+            "Visuals": [
+                { id: "esp", name: "ESP", each: { Box: true, Skeleton: false, Color: "#5865f2" } },
+                { id: "chams", name: "Chams", each: { Alpha: 120, Color: "#ff0000" } },
+                { id: "trac", name: "Tracers", each: { Width: 1.0, Color: "#ffffff" } },
+                { id: "full", name: "FullBright", each: { Intensity: 10 } }
+            ],
+            "Player": [
+                { id: "scaf", name: "Scaffold", each: { Delay: 50, Tower: true, Expand: 1.0 } },
+                { id: "eat", name: "AutoEat", each: { Health: 14.5 } }
+            ],
+            "Exploit": [
+                { id: "timer", name: "Timer", each: { Speed: 1.5 } },
+                { id: "dis", name: "Disabler", each: { Mode: 1.0 } }
+            ]
         };
+
+        // Automatisches Auffüllen auf 200+ Module (simuliert für die UI)
+        for(let i = 0; i < 150; i++) {
+            categories["Misc"] = categories["Misc"] || [];
+            categories["Misc"].push({ id: "mod"+i, name: "Module "+i, each: { Value: 1.0 } });
+        }
 
         let active = new Set(), configs = {}, binds = {}, winPos = {}, currentId = null;
 
         function build() {
-            let savedPos = localStorage.getItem('st_pos_v2');
+            let savedPos = localStorage.getItem('st_pos_v3');
             winPos = savedPos ? JSON.parse(savedPos) : {};
             let x = 30, y = 80, count = 0;
 
@@ -90,30 +108,19 @@
                 win.style.left = pos.x; win.style.top = pos.y;
                 
                 let h = document.createElement('div'); h.className = 'head'; 
-                h.innerHTML = `<span>${cat}</span><span style="font-size:8px">▼</span>`;
+                h.innerHTML = `<span>${cat}</span><span>▼</span>`;
                 h.onclick = (e) => { if(e.target === h || e.target.parentNode === h) win.classList.toggle('collapsed'); };
                 
                 let l = document.createElement('div'); l.className = 'list';
-                categories[cat].forEach(name => {
-                    let id = name.toLowerCase().replace(/\s/g, "");
-                    // Default Config for each module
-                    if(!configs[id]) {
-                        configs[id] = { 
-                            Range: 3.0, 
-                            Speed: 1.0, 
-                            Smooth: true, 
-                            Mode: 1.0 
-                        };
-                    }
+                categories[cat].forEach(c => {
+                    configs[c.id] = c.each;
+                    let m = document.createElement('div'); m.className = 'mod'; m.id = "btn-" + c.id;
+                    m.innerHTML = `<span>${c.name}</span><span id="lbl-${c.id}" class="bind-hint"></span>`;
                     
-                    let m = document.createElement('div'); m.className = 'mod'; m.id = "btn-" + id;
-                    m.innerHTML = `<span>${name}</span><span id="lbl-${id}" class="bind-hint"></span>`;
-                    
-                    // Tap to toggle, long press/double click for settings
                     let timer;
-                    m.onclick = () => toggle(id);
-                    m.ondblclick = () => openSet(id, name);
-                    m.ontouchstart = () => { timer = setTimeout(() => openSet(id, name), 600); };
+                    m.onclick = () => toggle(c.id);
+                    m.ondblclick = () => openSet(c.id, c.name);
+                    m.ontouchstart = () => { timer = setTimeout(() => openSet(c.id, c.name), 600); };
                     m.ontouchend = () => clearTimeout(timer);
                     
                     l.appendChild(m);
@@ -124,13 +131,6 @@
                 x += 195; count++; if(count >= 5) { x = 30; y += 420; count = 0; }
             }
             load();
-        }
-
-        function toggle(id) {
-            let el = document.getElementById("btn-" + id); if(!el) return;
-            if(active.has(id)) { active.delete(id); el.classList.remove('on'); }
-            else { active.add(id); el.classList.add('on'); }
-            updateHUD(); save();
         }
 
         function openSet(id, name) {
@@ -144,16 +144,18 @@
                 r.innerHTML = `<span>${k}</span>`;
                 let val = s[k];
                 
-                if(typeof val === 'number') {
-                    let wrapper = document.createElement('div');
-                    wrapper.style.display = "flex"; wrapper.style.alignItems = "center";
-                    let i = document.createElement('input'); 
-                    i.type = 'range'; i.min = 0; i.max = (k === "Range" ? 10 : 20); i.step = 0.1; i.value = val;
+                if(k === "Color") {
+                    let i = document.createElement('input'); i.type = 'color'; i.value = val;
+                    i.oninput = (e) => { s[k] = e.target.value; save(); };
+                    r.appendChild(i);
+                } else if(typeof val === 'number') {
+                    let wrapper = document.createElement('div'); wrapper.style.display = "flex"; wrapper.style.alignItems = "center";
+                    let i = document.createElement('input'); i.type = 'range'; i.min = 0; i.max = (k.includes("CPS") || k.includes("Delay") ? 100 : 20); i.step = 0.1; i.value = val;
                     let d = document.createElement('span'); d.className = 'val-num'; d.textContent = val;
                     i.oninput = (e) => { s[k] = parseFloat(e.target.value); d.textContent = e.target.value; save(); };
                     wrapper.appendChild(i); wrapper.appendChild(d);
                     r.appendChild(wrapper);
-                } else {
+                } else if(typeof val === 'boolean') {
                     let i = document.createElement('input'); i.type = 'checkbox'; i.checked = val;
                     i.onchange = (e) => { s[k] = e.target.checked; save(); };
                     r.appendChild(i);
@@ -163,20 +165,24 @@
             document.getElementById('set-win').style.display='block'; document.getElementById('blur').style.display='block';
         }
 
+        function toggle(id) {
+            let el = document.getElementById("btn-" + id); if(!el) return;
+            if(active.has(id)) { active.delete(id); el.classList.remove('on'); }
+            else { active.add(id); el.classList.add('on'); }
+            updateHUD(); save();
+        }
+
         function handleCmd(e) {
             let val = e.target.value;
             if (e.key === "Enter" && val.startsWith("%")) {
                 let args = val.substring(1).split(" ");
                 let cmd = args[0].toLowerCase();
-                if(cmd === "hclip") alert("HClip success: " + args[1]);
-                if(cmd === "vclip") alert("VClip success: " + args[1]);
-                if(cmd === "bind" && args[2]) { binds[args[1].toLowerCase()] = args[2].toUpperCase(); save(); load(); }
+                if(cmd === "hclip") alert("HClip: " + args[1]);
+                if(cmd === "vclip") alert("VClip: " + args[1]);
                 e.target.value = "";
             } else {
                 let q = val.toLowerCase();
-                document.querySelectorAll('.mod').forEach(m => {
-                    m.style.display = m.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
-                });
+                document.querySelectorAll('.mod').forEach(m => m.style.display = m.textContent.toLowerCase().includes(q) ? 'flex' : 'none');
             }
         }
 
@@ -184,19 +190,18 @@
             let d = false, ox, oy;
             const s = (e) => { d = true; let c = e.touches ? e.touches[0] : e; ox = c.clientX-w.offsetLeft; oy = c.clientY-w.offsetTop; w.style.zIndex = 1000; };
             const m = (e) => { if(!d) return; let c = e.touches ? e.touches[0] : e; w.style.left = (c.clientX-ox)+'px'; w.style.top = (c.clientY-oy)+'px'; };
-            const stop = () => { if(d) { d = false; w.style.zIndex = 10; winPos[cat] = { x: w.style.left, y: w.style.top }; localStorage.setItem('st_pos_v2', JSON.stringify(winPos)); } };
+            const stop = () => { if(d) { d = false; w.style.zIndex = 10; winPos[cat] = { x: w.style.left, y: w.style.top }; localStorage.setItem('st_pos_v3', JSON.stringify(winPos)); } };
             h.addEventListener('mousedown', s); h.addEventListener('touchstart', s);
             window.addEventListener('mousemove', m); window.addEventListener('touchmove', m);
             window.addEventListener('mouseup', stop); window.addEventListener('touchend', stop);
         }
 
         function startBinding() {
-            document.getElementById('bind-display').textContent = "PRESS...";
+            document.getElementById('bind-display').textContent = "...";
             const h = (e) => {
-                let k = e.key.toUpperCase(); if(k === "ESCAPE") k = null;
-                binds[currentId] = k;
-                document.getElementById('bind-display').textContent = k || "NONE";
-                let lbl = document.getElementById('lbl-'+currentId); if(lbl) lbl.textContent = k || "";
+                let k = e.key.toUpperCase(); binds[currentId] = k;
+                document.getElementById('bind-display').textContent = k;
+                let lbl = document.getElementById('lbl-'+currentId); if(lbl) lbl.textContent = k;
                 window.removeEventListener('keydown', h); save();
             };
             window.addEventListener('keydown', h);
@@ -204,32 +209,18 @@
 
         window.addEventListener('keydown', (e) => {
             if(document.activeElement.tagName === "INPUT") return;
-            let k = e.key.toUpperCase(); 
-            for(let id in binds) { if(binds[id] === k) toggle(id); }
+            let k = e.key.toUpperCase(); for(let id in binds) { if(binds[id] === k) toggle(id); }
         });
 
-        function updateHUD() { 
-            document.getElementById('hud').innerHTML = Array.from(active).sort().map(id => `<div class="hud-mod">${id}</div>`).join(''); 
-        }
-
-        function closeAll() { 
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); 
-            document.getElementById('blur').style.display = 'none'; 
-        }
-
-        function save() { 
-            localStorage.setItem('st_act', JSON.stringify(Array.from(active))); 
-            localStorage.setItem('st_cfg', JSON.stringify(configs)); 
-            localStorage.setItem('st_bnd', JSON.stringify(binds)); 
-        }
-
+        function updateHUD() { document.getElementById('hud').innerHTML = Array.from(active).sort().map(id => `<div class="hud-mod">${id}</div>`).join(''); }
+        function closeAll() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.getElementById('blur').style.display = 'none'; }
+        function save() { localStorage.setItem('st_act', JSON.stringify(Array.from(active))); localStorage.setItem('st_cfg', JSON.stringify(configs)); localStorage.setItem('st_bnd', JSON.stringify(binds)); }
         function load() {
             let a=localStorage.getItem('st_act'), c=localStorage.getItem('st_cfg'), b=localStorage.getItem('st_bnd');
             if(b) { binds=JSON.parse(b); for(let id in binds) { if(document.getElementById('lbl-'+id)) document.getElementById('lbl-'+id).textContent=binds[id]; } }
             if(a) { active=new Set(JSON.parse(a)); active.forEach(id => { let el=document.getElementById("btn-"+id); if(el) el.classList.add('on'); }); updateHUD(); }
             if(c) configs = JSON.parse(c);
         }
-
         build();
     </script>
 </body>
