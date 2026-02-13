@@ -1,76 +1,310 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stealth Client Preview</title>
     <style>
-        body { background: #080808; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
-        
-        /* HEADER UI */
+        :root {
+            --main-blue: #5865f2;
+            --bg-dark: #0d0d0d;
+            --panel-bg: #121212;
+            --header-bg: #0a0a0a;
+            --module-bg: #1a1a1a;
+            --module-hover: #222222;
+            --border-color: #333333;
+            --text-light: #eeeeee;
+            --text-muted: #aaaaaa;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            touch-action: none;
+            cursor: default;
+        }
+
+        /* HUD - ACTIVE MODULES */
+        #hud {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            text-align: right;
+            pointer-events: none;
+            z-index: 50;
+        }
+        .hud-item {
+            color: var(--main-blue);
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 2px 2px 2px rgba(0,0,0,0.6);
+            margin-bottom: 2px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* TOP BAR: SEARCH & FRIENDS */
         #top-bar {
-            position: absolute; top: 15px; width: 100%; display: flex; justify-content: center; gap: 20px; z-index: 100;
+            position: absolute;
+            top: 15px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 100;
         }
-        .ui-box {
-            background: rgba(10,10,10,0.9); border: 1px solid #222; padding: 5px 15px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        .glass-box {
+            background: rgba(20,20,20,0.95);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
         }
-        #search-bar { background: transparent; border: none; color: white; outline: none; width: 150px; }
+        #search-bar {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            outline: none;
+            width: 180px;
+            font-size: 14px;
+            padding: 2px 0;
+        }
 
         /* CATEGORY WINDOWS */
         .category {
-            position: absolute; width: 175px; background: #0a0a0a; border: 1px solid #222;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8); user-select: none; touch-action: none; z-index: 10;
+            position: absolute;
+            width: 170px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.9);
+            z-index: 10;
+            border-radius: 4px;
+            overflow: hidden; /* For dropdown */
+            user-select: none;
+            touch-action: none;
         }
         .header {
-            background: #050505; padding: 12px; font-weight: bold; font-size: 11px;
-            text-align: center; cursor: move; border-bottom: 2px solid #5865f2; color: #fff;
+            background: var(--header-bg);
+            padding: 14px;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+            cursor: grab; /* Grab cursor for dragging */
+            border-bottom: 2px solid var(--main-blue);
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .header:active {
+            cursor: grabbing; /* Grabbing cursor when active */
         }
 
-        /* DROPDOWN LOGIK */
-        .module-container { display: block; background: #111; }
-        .module-container.closed { display: none; }
-
+        /* MODULES & DROPDOWN */
+        .module-list {
+            display: none; /* Start closed by default */
+            background: var(--module-bg);
+            transition: all 0.3s ease-out;
+            max-height: 300px; /* Max height for scrollable content */
+            overflow-y: auto; /* Scroll if too many modules */
+        }
+        .module-list.open {
+            display: block;
+        }
         .module {
-            padding: 10px 15px; font-size: 12px; color: #999; border-bottom: 1px solid #1a1a1a;
-            cursor: pointer; text-align: left;
+            padding: 12px 15px;
+            font-size: 13px;
+            color: var(--text-muted);
+            border-bottom: 1px solid #282828;
+            cursor: pointer;
+            transition: 0.15s ease-in-out;
+            position: relative;
         }
-        .module.active { color: #5865f2; border-left: 3px solid #5865f2; background: #151515; }
+        .module:last-child {
+            border-bottom: none;
+        }
+        .module:hover {
+            background: var(--module-hover);
+            color: var(--text-light);
+        }
+        .module.active {
+            color: var(--text-light);
+            background: var(--main-blue); /* Active background color */
+            border-left: 4px solid var(--main-blue); /* Stronger left border */
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(88, 101, 242, 0.4); /* Subtle glow */
+        }
 
-        /* PANELS */
-        .panel {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 320px; background: #0f0f0f; border: 1px solid #5865f2;
-            box-shadow: 0 0 30px rgba(88, 101, 242, 0.5); padding: 20px;
-            display: none; z-index: 2000; border-radius: 8px;
+        /* MODALS: SETTINGS & FRIENDS */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            background: var(--header-bg); /* Darker background for modals */
+            border: 1px solid var(--main-blue);
+            padding: 25px;
+            display: none;
+            z-index: 2000;
+            border-radius: 12px;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
+            animation: fadeIn 0.2s ease-out;
         }
-        .setting-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 13px; align-items: center; }
-        .btn-main { background: #5865f2; border: none; color: white; width: 100%; padding: 10px; margin-top: 15px; cursor: pointer; border-radius: 4px; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 1500; }
-        
-        .friend-tag { background: #5865f2; color: white; padding: 2px 8px; border-radius: 10px; display: inline-block; margin: 3px; font-size: 11px; }
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            align-items: center;
+            font-size: 14px;
+        }
+        .setting-row input[type="range"] {
+            width: 100px;
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--border-color);
+            outline: none;
+            opacity: 0.9;
+            transition: opacity .2s;
+            border-radius: 2px;
+        }
+        .setting-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--main-blue);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        .setting-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--main-blue); /* Custom color for checkbox */
+            cursor: pointer;
+        }
+        .setting-row input[type="color"] {
+            border: none;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden; /* Hide color picker borders */
+        }
+        .setting-row select {
+            background: #282828;
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .btn-action {
+            background: var(--main-blue);
+            border: none;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+        .btn-action:hover {
+            background: #4a57e6; /* Slightly lighter blue on hover */
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            z-index: 1500;
+        }
+
+        /* FRIENDS LIST */
+        .friend-chip {
+            background: #282828;
+            color: var(--main-blue);
+            padding: 6px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 4px;
+            border: 1px solid var(--main-blue);
+            font-size: 13px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .friend-chip:hover {
+            background: #3a3a3a;
+        }
+        .friend-input-area {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .friend-input-area input {
+            background: #1a1a1a;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            flex: 1;
+            padding: 8px;
+            border-radius: 4px;
+            outline: none;
+        }
+        .friend-input-area button {
+            background: var(--main-blue);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* KEYFRAMES */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
-    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+    <div class="overlay" id="overlay" onclick="closeModals()"></div>
+    <div id="hud"></div>
     
     <div id="top-bar">
-        <div class="ui-box"><input type="text" id="search-bar" placeholder="Suchen..." onkeyup="filter()"></div>
-        <div class="ui-box" onclick="openFriends()" style="cursor:pointer; color:#5865f2; font-weight:bold;">FRIENDS</div>
+        <div class="glass-box"><input type="text" id="search-bar" placeholder="Cheat suchen..." onkeyup="filterHacks()"></div>
+        <div class="glass-box" onclick="toggleFriends()" style="cursor:pointer; color:var(--main-blue); font-weight:bold;">FRIENDS</div>
     </div>
 
-    <div class="panel" id="settings-panel">
-        <h3 id="set-title" style="color:#5865f2">Settings</h3>
-        <div id="set-content"></div>
-        <button class="btn-main" onclick="closeAll()">SPEICHERN</button>
+    <div class="modal" id="settings-modal">
+        <h3 id="mod-name-title" style="color:var(--main-blue); margin: 0 0 20px 0; text-align: center;">Settings</h3>
+        <div id="mod-settings-content"></div>
+        <button class="btn-action" onclick="closeModals()">SAVE</button>
     </div>
 
-    <div class="panel" id="friends-panel">
-        <h3 style="color:#5865f2">FRIEND MANAGER</h3>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="friend-name" placeholder="Username..." style="background:#1a1a1a; border:1px solid #333; color:white; flex-grow:1; padding:5px;">
-            <button onclick="addFriend()" style="background:#222; color:white; border:none; padding:5px 10px;">ADD</button>
+    <div class="modal" id="friends-modal">
+        <h3 style="color:var(--main-blue); margin: 0 0 20px 0; text-align: center;">FRIEND LIST</h3>
+        <div class="friend-input-area">
+            <input type="text" id="new-friend" placeholder="Username...">
+            <button onclick="addFriend()">ADD</button>
         </div>
-        <div id="friends-list" style="margin-top:15px; min-height:50px; border:1px solid #222; padding:10px;"></div>
-        <button class="btn-main" onclick="closeAll()">FERTIG</button>
+        <div id="friends-list-container" style="margin-top:10px; min-height:80px; background:#050505; border:1px solid #222; padding:10px; border-radius:4px; overflow-y: auto;"></div>
+        <button class="btn-action" onclick="closeModals()">CLOSE</button>
     </div>
 
     <script>
@@ -80,133 +314,323 @@
             "Player": ["AutoEat", "AutoArmor", "ChestStealer", "Scaffold", "AutoTool", "FastUse", "Blink", "InvWalk"],
             "Visuals": ["ESP", "Tracers", "FullBright", "NameTags", "X-Ray", "Freecam", "Chams", "StorageESP"],
             "Exploit": ["Timer", "PacketFly", "Phase", "Disabler", "PingSpoof", "Crasher"],
-            "World": ["AutoMine", "FastPlace", "Nuker", "Tower", "TimerWorld"],
-            "Anarchy": ["AutoHighway", "ChunkScanner", "PortalGodMode", "BedAura"]
+            "World": ["AutoMine", "FastPlace", "Nuker", "Tower", "TimerWorld"]
         };
 
+        let activeHacks = new Set();
         let friends = [];
-        let modStates = {};
+        let moduleSettings = {}; // Speichert individuelle Einstellungen pro Modul
 
-        function init() {
-            let x = 20, y = 80, count = 0;
-            for (let cat in categories) {
-                let win = document.createElement('div');
-                win.className = 'category';
-                win.style.left = x + 'px'; win.style.top = y + 'px';
+        // --- CORE UI BUILDER ---
+        function buildUI() {
+            let x = 30, y = 100, i = 0;
+            for (let catName in categories) {
+                let categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.style.left = x + 'px';
+                categoryDiv.style.top = y + 'px';
                 
-                // Header mit Dropdown-Klick
                 let header = document.createElement('div');
                 header.className = 'header';
-                header.textContent = cat.toUpperCase();
-                header.onclick = (e) => toggleDropdown(win);
-                win.appendChild(header);
-
-                let container = document.createElement('div');
-                container.className = 'module-container';
+                header.textContent = catName.toUpperCase();
+                header.onclick = () => categoryDiv.querySelector('.module-list').classList.toggle('open');
                 
-                categories[cat].forEach(m => {
-                    let id = m.toLowerCase().replace(/\s/g, '');
-                    modStates[id] = false;
-                    let modDiv = document.createElement('div');
-                    modDiv.className = 'module';
-                    modDiv.id = id;
-                    modDiv.textContent = m;
-                    
-                    // Steuerung
-                    modDiv.onclick = (e) => toggleModule(id);
-                    modDiv.ondblclick = (e) => openSettings(m);
-                    
-                    // iPad Hold für Settings
-                    let tTimer;
-                    modDiv.ontouchstart = () => { tTimer = setTimeout(() => openSettings(m), 700); };
-                    modDiv.ontouchend = () => clearTimeout(tTimer);
+                let moduleList = document.createElement('div');
+                moduleList.className = 'module-list';
+                
+                categories[catName].forEach(hackName => {
+                    let hackId = hackName.toLowerCase().replace(/\s/g, '');
+                    moduleSettings[hackId] = moduleSettings[hackId] || {}; // Initialize settings for each module
 
-                    container.appendChild(modDiv);
+                    let moduleDiv = document.createElement('div');
+                    moduleDiv.className = 'module';
+                    moduleDiv.textContent = hackName;
+                    moduleDiv.id = hackId;
+                    
+                    // Touch and Click Handlers
+                    let touchStartTime;
+                    moduleDiv.ontouchstart = () => { touchStartTime = Date.now(); };
+                    moduleDiv.ontouchend = () => {
+                        if(Date.now() - touchStartTime > 600) showSettings(hackName, hackId); // Long Press
+                        else toggleHack(hackName, moduleDiv); // Tap
+                    };
+                    moduleDiv.onclick = () => toggleHack(hackName, moduleDiv);
+                    moduleDiv.ondblclick = () => showSettings(hackName, hackId);
+
+                    moduleList.appendChild(moduleDiv);
                 });
+
+                categoryDiv.appendChild(header);
+                categoryDiv.appendChild(moduleList);
+                document.body.appendChild(categoryDiv);
+                makeDraggable(categoryDiv, header);
                 
-                win.appendChild(container);
-                document.body.appendChild(win);
-                makeDraggable(win, header);
-
-                x += 190; count++;
-                if(count >= 4) { x = 20; y += 320; count = 0; }
+                x += 185; i++;
+                if(i >= 3) { // Max 3 columns for better iPad layout
+                    x = 30;
+                    y += 380; // Adjusted vertical spacing
+                    i = 0;
+                }
             }
+            loadState(); // Load saved state after building UI
         }
 
-        function toggleDropdown(win) {
-            let container = win.querySelector('.module-container');
-            container.classList.toggle('closed');
+        // --- HACK TOGGLE & HUD ---
+        function toggleHack(name, el) {
+            let hackId = name.toLowerCase().replace(/\s/g, '');
+            if(activeHacks.has(hackId)) {
+                activeHacks.delete(hackId);
+                el.classList.remove('active');
+            } else {
+                activeHacks.add(hackId);
+                el.classList.add('active');
+            }
+            updateHUD();
+            saveState();
         }
 
-        function toggleModule(id) {
-            modStates[id] = !modStates[id];
-            document.getElementById(id).classList.toggle('active');
+        function updateHUD() {
+            let hud = document.getElementById('hud');
+            hud.innerHTML = Array.from(activeHacks)
+                                .sort()
+                                .map(id => {
+                                    // Find original name from id
+                                    for(let cat in categories) {
+                                        for(let name of categories[cat]) {
+                                            if(name.toLowerCase().replace(/\s/g, '') === id) return name;
+                                        }
+                                    }
+                                    return id; // Fallback
+                                })
+                                .map(name => `<div class="hud-item">${name}</div>`)
+                                .join('');
         }
 
-        function openFriends() {
-            document.getElementById('friends-panel').style.display = 'block';
+        // --- SETTINGS MODAL ---
+        function showSettings(name, hackId) {
+            document.getElementById('mod-name-title').textContent = name.toUpperCase() + " SETTINGS";
+            let settingsContent = document.getElementById('mod-settings-content');
+            settingsContent.innerHTML = ''; // Clear previous settings
+
+            let currentSettings = moduleSettings[hackId]; // Get current settings for this module
+
+            if (name === "ESP") {
+                const espDefaults = {
+                    "Ignore Friends": true, "Friend Color": "#5865f2",
+                    "Show Players": true, "Player Color": "#ffffff",
+                    "Show Aggro Mobs": false, "Aggro Color": "#ff0000",
+                    "Show Passive Mobs": false, "Passive Color": "#00ff00",
+                    "Show Items": false, "Item Color": "#ffff00"
+                };
+                for (let setting in espDefaults) {
+                    let value = currentSettings[setting] !== undefined ? currentSettings[setting] : espDefaults[setting];
+                    addSettingRow(settingsContent, setting, typeof espDefaults[setting], value, (e) => {
+                        moduleSettings[hackId][setting] = (typeof espDefaults[setting] === 'boolean') ? e.target.checked : e.target.value;
+                        saveState();
+                    });
+                }
+            } else if (name === "KillAura") {
+                 const kaDefaults = {"Range": 4, "CPS": 10, "Bypass Mode": "Legit"};
+                 for (let setting in kaDefaults) {
+                    let value = currentSettings[setting] !== undefined ? currentSettings[setting] : kaDefaults[setting];
+                     addSettingRow(settingsContent, setting, typeof kaDefaults[setting], value, (e) => {
+                         moduleSettings[hackId][setting] = (typeof kaDefaults[setting] === 'number') ? parseFloat(e.target.value) : e.target.value;
+                         saveState();
+                     }, kaDefaults[setting]); // Pass default for ranges
+                 }
+            } else {
+                // Generic settings for other modules
+                const genericDefaults = {"Value": 5, "Mode": "Bypass"};
+                for (let setting in genericDefaults) {
+                    let value = currentSettings[setting] !== undefined ? currentSettings[setting] : genericDefaults[setting];
+                    addSettingRow(settingsContent, setting, typeof genericDefaults[setting], value, (e) => {
+                        moduleSettings[hackId][setting] = (typeof genericDefaults[setting] === 'number') ? parseFloat(e.target.value) : e.target.value;
+                        saveState();
+                    }, genericDefaults[setting]);
+                }
+            }
+            document.getElementById('settings-modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+        
+        // Helper to add setting rows
+        function addSettingRow(parent, label, type, currentValue, onChangeHandler, defaultValue) {
+            let row = document.createElement('div');
+            row.className = 'setting-row';
+            let labelSpan = document.createElement('span');
+            labelSpan.textContent = label;
+            row.appendChild(labelSpan);
+
+            let input;
+            if (type === 'boolean') {
+                input = document.createElement('input');
+                input.type = 'checkbox';
+                input.checked = currentValue;
+            } else if (type === 'string' && label === "Mode") { // For dropdowns like Bypass/Legit
+                input = document.createElement('select');
+                ['Bypass', 'Legit', 'Packet', 'Vanilla'].forEach(optionText => {
+                    let option = document.createElement('option');
+                    option.value = optionText;
+                    option.textContent = optionText;
+                    if (optionText === currentValue) option.selected = true;
+                    input.appendChild(option);
+                });
+            } else if (type === 'number') { // Slider
+                input = document.createElement('input');
+                input.type = 'range';
+                input.min = 1; input.max = 10; // Generic range
+                input.value = currentValue;
+                if (label === "Range") { input.min = 1; input.max = 7; input.step = 0.1; }
+                if (label === "CPS") { input.min = 1; input.max = 20; input.step = 1; }
+            } else if (type === 'string' && label.includes("Color")) { // Color picker
+                input = document.createElement('input');
+                input.type = 'color';
+                input.value = currentValue;
+            } else {
+                 input = document.createElement('span'); // Fallback for display
+                 input.textContent = currentValue;
+            }
+            input.onchange = onChangeHandler;
+            input.oninput = onChangeHandler; // For range sliders
+            row.appendChild(input);
+            parent.appendChild(row);
+        }
+
+        // --- FRIEND MANAGER ---
+        function toggleFriends() {
+            document.getElementById('friends-modal').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
             renderFriends();
         }
 
         function addFriend() {
-            let n = document.getElementById('friend-name').value;
-            if(n && !friends.includes(n)) { friends.push(n); document.getElementById('friend-name').value = ''; renderFriends(); }
+            let input = document.getElementById('new-friend');
+            let name = input.value.trim();
+            if(name && !friends.includes(name)) {
+                friends.push(name);
+                input.value = '';
+                renderFriends();
+                saveState();
+            }
+        }
+
+        function removeFriend(nameToRemove) {
+            friends = friends.filter(f => f !== nameToRemove);
+            renderFriends();
+            saveState();
         }
 
         function renderFriends() {
-            document.getElementById('friends-list').innerHTML = friends.map(f => `<span class="friend-tag">${f}</span>`).join('');
+            let container = document.getElementById('friends-list-container');
+            container.innerHTML = friends.map(f => 
+                `<span class="friend-chip" onclick="removeFriend('${f}')">${f} <span style="font-weight:normal; font-size: 0.8em;">(x)</span></span>`
+            ).join('');
         }
 
-        function openSettings(name) {
-            document.getElementById('set-title').textContent = name + " SETTINGS";
-            let c = document.getElementById('set-content');
-            if(name === "ESP") {
-                c.innerHTML = `
-                    <div class="setting-row"><span>Ignore Friends</span><input type="checkbox" checked></div>
-                    <div class="setting-row"><span>Show Players</span><input type="checkbox" checked></div>
-                    <div class="setting-row"><span>Show Mobs</span><input type="checkbox"></div>
-                    <div class="setting-row"><span>Friend Color</span><input type="color" value="#5865f2"></div>
-                `;
-            } else {
-                c.innerHTML = `<div class="setting-row"><span>Value</span><input type="range" min="1" max="10" value="5"></div>
-                               <div class="setting-row"><span>Mode</span><select style="background:#222;color:white;border:none;"><option>Bypass</option><option>Legit</option></select></div>`;
-            }
-            document.getElementById('settings-panel').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-        }
-
-        function closeAll() {
-            document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+        // --- MODAL & OVERLAY ---
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
             document.getElementById('overlay').style.display = 'none';
         }
 
-        function filter() {
-            let s = document.getElementById('search-bar').value.toLowerCase();
-            document.querySelectorAll('.module').forEach(m => {
-                m.style.display = m.textContent.toLowerCase().includes(s) ? 'block' : 'none';
+        // --- SEARCH FUNCTIONALITY ---
+        function filterHacks() {
+            let query = document.getElementById('search-bar').value.toLowerCase();
+            document.querySelectorAll('.module').forEach(modDiv => {
+                let moduleName = modDiv.textContent.toLowerCase();
+                modDiv.style.display = moduleName.includes(query) ? 'block' : 'none';
+                // Ensure parent category is open if a module is found
+                if (moduleName.includes(query) && !modDiv.closest('.module-list').classList.contains('open')) {
+                    modDiv.closest('.module-list').classList.add('open');
+                } else if (!moduleName.includes(query) && query === '') { // If query cleared, close all
+                    modDiv.closest('.module-list').classList.remove('open');
+                }
             });
+
+            // If search bar is empty, close all module lists
+            if (query === '') {
+                document.querySelectorAll('.module-list').forEach(list => list.classList.remove('open'));
+            }
         }
 
+        // --- DRAG & DROP ---
         function makeDraggable(win, header) {
-            let drag = false, ox, oy;
-            const start = (e) => { 
-                if(e.target !== header) return;
-                drag = true; let c = e.touches ? e.touches[0] : e; 
-                ox = c.clientX - win.offsetLeft; oy = c.clientY - win.offsetTop; 
-                win.style.zIndex = 1000;
+            let isDragging = false, offsetX, offsetY;
+            const start = (e) => {
+                if (e.target !== header) return; // Only drag by header
+                isDragging = true;
+                let client = e.touches ? e.touches[0] : e; 
+                offsetX = client.clientX - win.offsetLeft; 
+                offsetY = client.clientY - win.offsetTop; 
+                win.style.zIndex = 500;
+                header.style.cursor = 'grabbing';
             };
             const move = (e) => { 
-                if(!drag) return; let c = e.touches ? e.touches[0] : e; 
-                win.style.left = (c.clientX-ox)+'px'; win.style.top = (c.clientY-oy)+'px'; 
+                if(!isDragging) return; 
+                let client = e.touches ? e.touches[0] : e; 
+                win.style.left = (client.clientX - offsetX) + 'px'; 
+                win.style.top = (client.clientY - offsetY) + 'px'; 
             };
-            const stop = () => { drag = false; win.style.zIndex = 10; };
+            const end = () => { 
+                isDragging = false; 
+                win.style.zIndex = 10;
+                header.style.cursor = 'grab';
+            };
             header.addEventListener('mousedown', start); header.addEventListener('touchstart', start);
             window.addEventListener('mousemove', move); window.addEventListener('touchmove', move);
-            window.addEventListener('mouseup', stop); window.addEventListener('touchend', stop);
+            window.addEventListener('mouseup', end); window.addEventListener('touchend', end);
         }
 
-        init();
+        // --- LOCAL STORAGE (SAVE/LOAD STATE) ---
+        function saveState() {
+            localStorage.setItem('stealth_activeHacks', JSON.stringify(Array.from(activeHacks)));
+            localStorage.setItem('stealth_friends', JSON.stringify(friends));
+            localStorage.setItem('stealth_moduleSettings', JSON.stringify(moduleSettings));
+        }
+
+        function loadState() {
+            // Load active hacks
+            const savedHacks = localStorage.getItem('stealth_activeHacks');
+            if (savedHacks) {
+                activeHacks = new Set(JSON.parse(savedHacks));
+                activeHacks.forEach(hackId => {
+                    let el = document.getElementById(hackId);
+                    if (el) el.classList.add('active');
+                });
+                updateHUD();
+            }
+
+            // Load friends
+            const savedFriends = localStorage.getItem('stealth_friends');
+            if (savedFriends) {
+                friends = JSON.parse(savedFriends);
+                renderFriends();
+            }
+
+            // Load module settings
+            const savedSettings = localStorage.getItem('stealth_moduleSettings');
+            if (savedSettings) {
+                moduleSettings = JSON.parse(savedSettings);
+            }
+        }
+        
+        // --- CONSOLE LOGO ---
+        function printLogo() {
+            const logo = `
+   ▄▄▄       ▄▄▄  ▄▄▄·
+  █████▄   ▄███▀▐█ ▀█
+  ███  ███  ██▀ ██▀
+  ███  ███▄ ██▄ ▐█▄█▌
+  █████▀▀  ▀▀▀  ▀▀▀
+             `;
+            console.log(logo);
+            console.log("%c⚡ Stealth Client - Web Preview ⚡", "color: #5865f2; font-size: 16px; font-weight: bold;");
+            console.log("%cOptimiert für iPad & Desktop.", "color: #aaa;");
+        }
+
+        // --- INITIALIZATION ---
+        printLogo(); // Display logo on console start
+        buildUI(); // Build the UI
     </script>
 </body>
 </html>
