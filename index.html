@@ -3,25 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stealth Client | Infinite Edition</title>
+    <title>Stealth Client | 100% Edition</title>
     <style>
         :root { --main: #5865f2; --bg: #050505; --win: #0f0f0f; --brd: #222; }
         body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; touch-action: none; }
+        
+        /* HUD & PANIC */
         #hud { position: fixed; top: 15px; left: 15px; pointer-events: none; z-index: 50; }
         .hud-mod { color: var(--main); font-weight: 900; font-size: 16px; text-shadow: 2px 2px #000; text-transform: uppercase; margin-bottom: 2px; }
-        #panic-btn { position: fixed; top: 15px; right: 15px; background: #ff3e3e; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 1000; }
+        #panic-btn { position: fixed; top: 15px; right: 15px; background: #ff3e3e; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 1000; box-shadow: 0 0 15px rgba(255,62,62,0.4); }
+
+        /* TOP BAR */
         #top-bar { position: absolute; top: 65px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 100; }
         .box { background: var(--win); border: 1px solid var(--brd); padding: 10px; border-radius: 5px; }
         input[type="text"] { background: transparent; border: none; color: white; outline: none; width: 150px; }
-        .window { position: absolute; width: 180px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; box-shadow: 0 10px 30px #000; max-height: 400px; overflow-y: auto; scrollbar-width: none; }
+
+        /* WINDOWS */
+        .window { position: absolute; width: 180px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; box-shadow: 0 10px 30px #000; max-height: 450px; overflow-y: auto; scrollbar-width: none; }
         .head { background: #000; padding: 15px; text-align: center; font-size: 11px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); text-transform: uppercase; position: sticky; top: 0; z-index: 20; }
-        .mod { padding: 12px 15px; font-size: 12px; color: #777; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .mod { padding: 12px 15px; font-size: 12px; color: #777; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
         .mod.on { color: white; background: var(--main); font-weight: bold; }
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: #0c0c0c; border: 1px solid var(--main); padding: 25px; display: none; z-index: 2000; border-radius: 10px; }
+        .bind-label { font-size: 9px; opacity: 0.5; color: #fff; }
+
+        /* MODALS */
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: #0c0c0c; border: 1px solid var(--main); padding: 25px; display: none; z-index: 2000; border-radius: 10px; box-shadow: 0 0 50px #000; }
         .row { display: flex; justify-content: space-between; margin: 15px 0; font-size: 14px; align-items: center; }
         .val-num { color: var(--main); font-weight: bold; min-width: 35px; text-align: right; }
         .btn { background: var(--main); border: none; color: white; width: 100%; padding: 12px; border-radius: 5px; margin-top: 10px; font-weight: bold; cursor: pointer; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
+
         input[type="range"] { width: 100px; accent-color: var(--main); }
         .bind-btn { background: #222; border: 1px solid #444; color: var(--main); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
     </style>
@@ -33,69 +43,69 @@
     <div class="overlay" id="blur" onclick="closeAll()"></div>
     
     <div id="top-bar">
-        <div class="box"><input type="text" id="search" placeholder="Search..." onkeyup="filter()"></div>
+        <div class="box"><input type="text" id="search" placeholder="Suchen..." onkeyup="filter()"></div>
         <div class="box" onclick="openF()" style="cursor:pointer; color:var(--main); font-weight:bold;">FRIENDS</div>
     </div>
 
     <div class="modal" id="set-win">
         <h3 id="set-title" style="color:var(--main); margin-top:0;">Settings</h3>
         <div id="set-body"></div>
-        <div class="row"><span>Keybind</span><button id="bind-display" class="bind-btn" onclick="startBinding()">NONE</button></div>
-        <button class="btn" onclick="closeAll()">SAVE</button>
+        <div class="row" style="border-top: 1px solid #222; padding-top:15px;">
+            <span>Keybind</span>
+            <button id="bind-display" class="bind-btn" onclick="startBinding()">NONE</button>
+        </div>
+        <button class="btn" onclick="closeAll()">SAVE CONFIG</button>
+    </div>
+
+    <div class="modal" id="f-win">
+        <h3 style="color:var(--main); margin-top:0;">FRIENDS</h3>
+        <div style="display:flex; gap:10px;"><input type="text" id="f-in" placeholder="Name..." style="background:#1a1a1a; flex:1; padding:8px; border:1px solid #333; color:white;"><button onclick="addF()" style="padding:8px; background:var(--main); border:none; color:white;">ADD</button></div>
+        <div id="f-list" style="margin-top:15px; min-height:80px; background:#050505; padding:10px;"></div>
+        <button class="btn" onclick="closeAll()">CLOSE</button>
     </div>
 
     <script>
         const categories = {
             "Combat": [
-                { id: "aura", name: "KillAura", each: { Range: 4.2, CPS: 12, Blocking: true, Raytrace: true } },
-                { id: "velo", name: "Velocity", each: { Horizontal: 0, Vertical: 0, Chance: 100 } },
+                { id: "aura", name: "KillAura", each: { Range: 4.2, CPS: 12, Blocking: true } },
+                { id: "velo", name: "Velocity", each: { Horizontal: 0, Vertical: 0 } },
                 { id: "reach", name: "Reach", each: { Distance: 3.5 } },
-                { id: "crit", name: "Criticals", each: { Delay: 0.1 } },
-                { id: "trig", name: "TriggerBot", each: { CPS: 10, Range: 3.8 } },
-                { id: "bot", name: "AntiBot", each: { Watchdog: true, Mineplex: false } },
-                { id: "totem", name: "AutoTotem", each: { Health: 4.5 } }
+                { id: "crit", name: "Criticals", each: { Packet: true } },
+                { id: "bot", name: "AntiBot", each: { Watchdog: true } }
             ],
             "Movement": [
-                { id: "fly", name: "Fly", each: { Speed: 2.0, Damage: false, Verus: false } },
+                { id: "fly", name: "Fly", each: { Speed: 2.0, Damage: false } },
                 { id: "speed", name: "Speed", each: { Speed: 0.6, Jump: true } },
-                { id: "long", name: "LongJump", each: { Boost: 2.5 } },
                 { id: "step", name: "Step", each: { Height: 1.5 } },
-                { id: "jesus", name: "Jesus", each: { Solid: true } },
-                { id: "spider", name: "Spider", each: { Speed: 0.2 } },
-                { id: "noslow", name: "NoSlow", each: { SoulSand: true } },
-                { id: "sprint", name: "AutoSprint", each: { Omni: true } }
+                { id: "long", name: "LongJump", each: { Boost: 2.5 } },
+                { id: "jesus", name: "Jesus", each: { Mode: 1 } },
+                { id: "spider", name: "Spider", each: { Speed: 0.2 } }
             ],
             "Visuals": [
                 { id: "esp", name: "ESP", each: { Players: true, Box: true, Color: "#5865f2" } },
-                { id: "trac", name: "Tracers", each: { Thickness: 1.0 } },
                 { id: "chams", name: "Chams", each: { Alpha: 120 } },
-                { id: "tags", name: "NameTags", each: { Health: true } },
                 { id: "full", name: "FullBright", each: { Gamma: 10 } },
-                { id: "xray", name: "X-Ray", each: { Opacity: 100 } },
-                { id: "chest", name: "ChestESP", each: { Color: "#ffaa00" } }
+                { id: "trac", name: "Tracers", each: { Alpha: 255 } },
+                { id: "xray", name: "X-Ray", each: { Opacity: 100 } }
             ],
             "Player": [
-                { id: "scaf", name: "Scaffold", each: { Delay: 50, Tower: true, Rotations: true } },
-                { id: "eat", name: "AutoEat", each: { Health: 14 } },
+                { id: "scaf", name: "Scaffold", each: { Delay: 50, Tower: true } },
+                { id: "eat", name: "AutoEat", each: { Health: 15 } },
                 { id: "tool", name: "AutoTool", each: { Silent: true } },
-                { id: "inv", name: "InvWalk", each: { Bypass: false } },
-                { id: "fast", name: "FastUse", each: { Speed: 1.0 } },
-                { id: "chestst", name: "ChestStealer", each: { Delay: 80 } }
+                { id: "inv", name: "InvWalk", each: { Bypass: true } }
             ],
             "Exploit": [
                 { id: "timer", name: "Timer", each: { Speed: 1.2 } },
-                { id: "dis", name: "Disabler", each: { Grim: true, Verus: false } },
-                { id: "blink", name: "Blink", each: { MaxPackets: 20 } },
-                { id: "phase", name: "Phase", each: { Distance: 0.2 } }
+                { id: "dis", name: "Disabler", each: { Mode: 1 } },
+                { id: "phase", name: "Phase", each: { Dist: 0.2 } }
             ],
             "Ghost": [
-                { id: "aclick", name: "AutoClicker", each: { MinCPS: 8, MaxCPS: 14 } },
-                { id: "aim", name: "AimAssist", each: { Speed: 1.0, FOV: 90 } },
-                { id: "wreach", name: "WeaponReach", each: { Extra: 0.2 } }
+                { id: "click", name: "AutoClicker", each: { CPS: 10 } },
+                { id: "aim", name: "AimAssist", each: { Speed: 1.0 } }
             ]
         };
 
-        let active = new Set(); let modConfigs = {}; let keybinds = {}; let currentId = null;
+        let active = new Set(); let modConfigs = {}; let keybinds = {}; let currentId = null; let friends = [];
 
         function build() {
             let x = 20, y = 120, count = 0;
@@ -107,14 +117,14 @@
                 categories[cat].forEach(c => {
                     modConfigs[c.id] = c.each;
                     let m = document.createElement('div'); m.className = 'mod'; m.id = "btn-" + c.id;
-                    m.innerHTML = `<span>${c.name}</span><span id="label-${c.id}" style="font-size:9px; opacity:0.5;"></span>`;
+                    m.innerHTML = `<span>${c.name}</span><span class="bind-label" id="label-${c.id}"></span>`;
                     m.onclick = () => toggle(c.id);
                     m.ondblclick = () => openSet(c.id, c.name);
                     l.appendChild(m);
                 });
                 win.appendChild(h); win.appendChild(l); document.body.appendChild(win);
                 drag(win, h);
-                x += 190; count++; if(count >= 4) { x = 20; y += 420; count = 0; }
+                x += 190; count++; if(count >= 4) { x = 20; y += 450; count = 0; }
             }
             load();
         }
@@ -137,7 +147,7 @@
                 let v = s[k]; let i;
                 if(typeof v === 'number') {
                     let w = document.createElement('div'); w.style.display="flex"; w.style.alignItems="center";
-                    i = document.createElement('input'); i.type='range'; i.min=0; i.max=(k.includes("CPS")||k.includes("Delay")?100:20); i.step=0.1; i.value=v;
+                    i = document.createElement('input'); i.type='range'; i.min=0; i.max=20; i.step=0.1; i.value=v;
                     let d = document.createElement('span'); d.className='val-num'; d.textContent=v;
                     i.oninput = (e) => { s[k] = parseFloat(e.target.value); d.textContent=e.target.value; save(); };
                     w.appendChild(i); w.appendChild(d); i = w;
@@ -166,8 +176,11 @@
             let k = e.key.toUpperCase(); for(let id in keybinds) { if(keybinds[id] === k) toggle(id); }
         });
 
-        function panic() { active.clear(); document.querySelectorAll('.mod').forEach(m => m.classList.remove('on')); updateHUD(); save(); }
+        function panic() { active.clear(); document.querySelectorAll('.mod').forEach(m => m.classList.remove('on')); updateHUD(); save(); alert("PANIC: KICK SIMULIERT!"); }
         function updateHUD() { document.getElementById('hud').innerHTML = Array.from(active).sort().map(id => `<div class="hud-mod">${id}</div>`).join(''); }
+        function openF() { document.getElementById('f-win').style.display = 'block'; document.getElementById('blur').style.display = 'block'; }
+        function addF() { let i = document.getElementById('f-in'); if(i.value) { friends.push(i.value); i.value = ''; renderF(); save(); } }
+        function renderF() { document.getElementById('f-list').innerHTML = friends.map(f => `<span style="background:var(--main); padding:3px 8px; border-radius:4px; margin:3px; display:inline-block; font-size:11px;">${f}</span>`).join(''); }
         function closeAll() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.getElementById('blur').style.display = 'none'; }
         function filter() { let q = document.getElementById('search').value.toLowerCase(); document.querySelectorAll('.mod').forEach(m => m.style.display = m.textContent.toLowerCase().includes(q) ? 'block' : 'none'); }
 
@@ -181,12 +194,18 @@
             window.addEventListener('mouseup', e); window.addEventListener('touchend', e);
         }
 
-        function save() { localStorage.setItem('st_a', JSON.stringify(Array.from(active))); localStorage.setItem('st_c', JSON.stringify(modConfigs)); localStorage.setItem('st_b', JSON.stringify(keybinds)); }
+        function save() { 
+            localStorage.setItem('st_a', JSON.stringify(Array.from(active))); 
+            localStorage.setItem('st_c', JSON.stringify(modConfigs)); 
+            localStorage.setItem('st_b', JSON.stringify(keybinds));
+            localStorage.setItem('st_f', JSON.stringify(friends));
+        }
         function load() {
-            let a=localStorage.getItem('st_a'), c=localStorage.getItem('st_c'), b=localStorage.getItem('st_b');
+            let a=localStorage.getItem('st_a'), c=localStorage.getItem('st_c'), b=localStorage.getItem('st_b'), f=localStorage.getItem('st_f');
             if(b) { keybinds=JSON.parse(b); for(let id in keybinds) { if(document.getElementById('label-'+id)) document.getElementById('label-'+id).textContent=keybinds[id]; } }
             if(a) { active=new Set(JSON.parse(a)); active.forEach(id => { let el=document.getElementById("btn-"+id); if(el) el.classList.add('on'); }); updateHUD(); }
             if(c) { modConfigs=JSON.parse(c); }
+            if(f) { friends=JSON.parse(f); renderF(); }
         }
         build();
     </script>
