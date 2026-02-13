@@ -3,38 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stealth Client | Ultra Edition</title>
+    <title>Stealth Client | Pro Edition</title>
     <style>
         :root { --main: #5865f2; --bg: #050505; --win: #0f0f0f; --brd: #222; }
         body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; touch-action: none; }
 
-        /* HUD & PANIC */
         #hud { position: fixed; top: 15px; left: 15px; pointer-events: none; z-index: 50; }
         .hud-mod { color: var(--main); font-weight: 900; font-size: 18px; text-shadow: 2px 2px #000; text-transform: uppercase; }
-        #panic-btn { position: fixed; top: 15px; right: 15px; background: #ff3e3e; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 1000; box-shadow: 0 0 15px rgba(255,62,62,0.4); }
+        #panic-btn { position: fixed; top: 15px; right: 15px; background: #ff3e3e; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 1000; }
 
-        /* TOP BAR */
         #top-bar { position: absolute; top: 65px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 100; }
-        .box { background: var(--win); border: 1px solid var(--brd); padding: 10px; border-radius: 5px; display: flex; align-items: center; }
+        .box { background: var(--win); border: 1px solid var(--brd); padding: 10px; border-radius: 5px; }
         input[type="text"] { background: transparent; border: none; color: white; outline: none; width: 150px; }
 
-        /* GUI WINDOWS */
         .window { position: absolute; width: 180px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; box-shadow: 0 10px 30px #000; }
-        .head { background: #000; padding: 15px; text-align: center; font-size: 11px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); text-transform: uppercase; letter-spacing: 1px; }
-        .list { display: block; }
-        .mod { padding: 12px 15px; font-size: 13px; color: #777; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; }
+        .head { background: #000; padding: 15px; text-align: center; font-size: 11px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); text-transform: uppercase; }
+        .mod { padding: 12px 15px; font-size: 13px; color: #777; border-bottom: 1px solid #1a1a1a; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; }
         .mod.on { color: white; background: var(--main); font-weight: bold; }
+        .bind-label { font-size: 9px; opacity: 0.6; align-self: center; }
 
-        /* MODALS */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: #0c0c0c; border: 1px solid var(--main); padding: 25px; display: none; z-index: 2000; border-radius: 10px; box-shadow: 0 0 50px #000; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: #0c0c0c; border: 1px solid var(--main); padding: 25px; display: none; z-index: 2000; border-radius: 10px; }
         .row { display: flex; justify-content: space-between; margin: 15px 0; font-size: 14px; align-items: center; }
-        .btn { background: var(--main); border: none; color: white; width: 100%; padding: 12px; border-radius: 5px; margin-top: 15px; font-weight: bold; cursor: pointer; }
+        .val-num { color: var(--main); font-weight: bold; margin-left: 5px; min-width: 30px; display: inline-block; }
+        .btn { background: var(--main); border: none; color: white; width: 100%; padding: 12px; border-radius: 5px; margin-top: 10px; font-weight: bold; cursor: pointer; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
 
-        /* INPUTS */
-        input[type="range"] { width: 100px; accent-color: var(--main); }
-        input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--main); }
-        select { background: #1a1a1a; color: white; border: 1px solid #333; padding: 5px; border-radius: 4px; }
+        input[type="range"] { width: 80px; accent-color: var(--main); }
+        .bind-btn { background: #222; border: 1px solid #444; color: var(--main); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
     </style>
 </head>
 <body>
@@ -51,67 +46,46 @@
     <div class="modal" id="set-win">
         <h3 id="set-title" style="color:var(--main); margin-top:0;">Settings</h3>
         <div id="set-body"></div>
+        <div class="row">
+            <span>Keybind</span>
+            <button id="bind-display" class="bind-btn" onclick="startBinding()">NONE</button>
+        </div>
         <button class="btn" onclick="closeAll()">SAVE CONFIG</button>
     </div>
 
     <div class="modal" id="f-win">
-        <h3 style="color:var(--main); margin-top:0;">FRIEND MANAGER</h3>
-        <div style="display:flex; gap:10px;">
-            <input type="text" id="f-in" placeholder="Username..." style="background:#1a1a1a; flex:1; padding:8px; border:1px solid #333; color:white;">
-            <button onclick="addF()" style="padding:8px; background:var(--main); border:none; color:white; border-radius:4px;">ADD</button>
-        </div>
-        <div id="f-list" style="margin-top:15px; min-height:80px; background:#050505; padding:10px; border:1px solid #222;"></div>
+        <h3 style="color:var(--main); margin-top:0;">FRIENDS</h3>
+        <div style="display:flex; gap:10px;"><input type="text" id="f-in" placeholder="Username..." style="background:#1a1a1a; flex:1; padding:8px; border:1px solid #333; color:white;"><button onclick="addF()" style="padding:8px; background:var(--main); border:none; color:white;">ADD</button></div>
+        <div id="f-list" style="margin-top:15px; min-height:80px; background:#050505; padding:10px;"></div>
         <button class="btn" onclick="closeAll()">CLOSE</button>
     </div>
 
     <script>
-        // DIE KOMPLETTE LISTE - NICHTS MEHR GELÖSCHT
         const categories = {
             "Combat": [
-                { id: "aura", name: "KillAura", each: { Range: 4.2, CPS: 12, Mode: ["Switch", "Single", "Multi"], Blocking: true, RayTrace: true } },
-                { id: "velo", name: "Velocity", each: { Horizontal: 0, Vertical: 0, Chance: 100 } },
-                { id: "reach", name: "Reach", each: { Distance: 3.5, Misplace: false } },
-                { id: "trig", name: "TriggerBot", each: { Range: 3.8, CPS: 10 } },
-                { id: "crit", name: "Criticals", each: { Mode: ["Packet", "Jump", "MiniJump"] } },
-                { id: "auto", name: "AutoTotem", each: { Health: 4.0, Soft: true } }
+                { id: "aura", name: "KillAura", each: { Range: 4.2, CPS: 12, Blocking: true } },
+                { id: "velo", name: "Velocity", each: { Horizontal: 0, Vertical: 0 } },
+                { id: "reach", name: "Reach", each: { Distance: 3.5 } }
             ],
             "Movement": [
-                { id: "fly", name: "Fly", each: { Speed: 2.0, Mode: ["Vanilla", "Motion", "Grim", "Verus"], Damage: false } },
-                { id: "speed", name: "Speed", each: { Speed: 0.6, "Auto Jump": true, Mode: ["Bhop", "Strafe", "OnGround"] } },
-                { id: "step", name: "Step", each: { Height: 1.5, Smooth: true } },
-                { id: "long", name: "LongJump", each: { Boost: 2.5, "Timer Boost": 1.2 } },
-                { id: "spider", name: "Spider", each: { Speed: 0.2, Mode: ["Vanilla", "Grim"] } },
-                { id: "jesus", name: "Jesus", each: { Mode: ["Solid", "Bounce"] } }
+                { id: "fly", name: "Fly", each: { Speed: 2.0, Damage: false } },
+                { id: "speed", name: "Speed", each: { Speed: 0.6, Jump: true } },
+                { id: "step", name: "Step", each: { Height: 1.5 } }
             ],
             "Visuals": [
-                { id: "esp", name: "ESP", each: { Players: true, Friends: true, Mobs: false, Box: true, Tracers: false, Color: "#5865f2" } },
-                { id: "chams", name: "Chams", each: { Red: 255, Green: 255, Blue: 255, Alpha: 120 } },
-                { id: "xray", name: "X-Ray", each: { Diamonds: true, Gold: true, Iron: false, Opacity: 100 } },
-                { id: "nametags", name: "NameTags", each: { Scale: 1.0, Health: true, Distance: false } },
-                { id: "full", name: "FullBright", each: { Mode: ["Gamma", "Potion"] } }
+                { id: "esp", name: "ESP", each: { Players: true, Box: true, Color: "#5865f2" } },
+                { id: "full", name: "FullBright", each: { Gamma: 10 } }
             ],
             "Player": [
-                { id: "scaf", name: "Scaffold", each: { Expand: 1, Tower: true, "Safe Walk": true, Delay: 50, Rotations: true } },
-                { id: "tool", name: "AutoTool", each: { Weapons: true, "Fast Switch": true } },
-                { id: "eat", name: "AutoEat", each: { Health: 15, "Prefer Gapple": true } },
-                { id: "inv", name: "InvWalk", each: { Mode: ["Vanilla", "Bypass"] } }
-            ],
-            "Exploit": [
-                { id: "timer", name: "Timer", each: { Speed: 1.2 } },
-                { id: "pfly", name: "PacketFly", each: { Speed: 0.5, Factor: 1.0 } },
-                { id: "dis", name: "Disabler", each: { Mode: ["Watchdog", "Grim", "Verus"] } },
-                { id: "phase", name: "Phase", each: { Distance: 0.2, Mode: ["Vclip", "Hclip"] } }
-            ],
-            "World": [
-                { id: "mine", name: "AutoMine", each: { Range: 5.0, "Hardness": 2.0 } },
-                { id: "place", name: "FastPlace", each: { Delay: 0 } },
-                { id: "nuke", name: "Nuker", each: { Range: 4.5, "ID": 56 } }
+                { id: "scaf", name: "Scaffold", each: { Delay: 50, Tower: true } }
             ]
         };
 
         let active = new Set();
         let friends = [];
         let modConfigs = {};
+        let keybinds = {}; 
+        let currentBindingId = null;
 
         function build() {
             let x = 20, y = 120, count = 0;
@@ -119,99 +93,102 @@
                 let win = document.createElement('div');
                 win.className = 'window';
                 win.style.left = x + 'px'; win.style.top = y + 'px';
-                
                 let h = document.createElement('div');
-                h.className = 'head';
-                h.textContent = cat;
+                h.className = 'head'; h.textContent = cat;
                 h.onclick = () => { let l = win.querySelector('.list'); l.style.display = l.style.display === 'none' ? 'block' : 'none'; };
-                
                 let l = document.createElement('div');
                 l.className = 'list';
-                
                 categories[cat].forEach(c => {
                     modConfigs[c.id] = c.each;
                     let m = document.createElement('div');
-                    m.className = 'mod';
-                    m.id = "btn-" + c.id;
-                    m.textContent = c.name;
-                    
-                    let touch;
-                    m.ontouchstart = () => touch = Date.now();
-                    m.ontouchend = () => { if(Date.now()-touch > 600) openSet(c.id, c.name); else toggle(c.id); };
+                    m.className = 'mod'; m.id = "btn-" + c.id;
+                    m.innerHTML = `<span>${c.name}</span><span class="bind-label" id="label-${c.id}"></span>`;
+                    let t;
+                    m.ontouchstart = () => t = Date.now();
+                    m.ontouchend = () => { if(Date.now()-t > 600) openSet(c.id, c.name); else toggle(c.id); };
                     m.onclick = () => toggle(c.id);
                     m.ondblclick = () => openSet(c.id, c.name);
-                    
                     l.appendChild(m);
                 });
-                
                 win.appendChild(h); win.appendChild(l);
                 document.body.appendChild(win);
                 drag(win, h);
                 x += 190; count++;
-                if(count >= 3) { x = 20; y += 380; count = 0; }
+                if(count >= 4) { x = 20; y += 380; count = 0; }
             }
             load();
         }
 
         function toggle(id) {
             let el = document.getElementById("btn-" + id);
+            if(!el) return;
             if(active.has(id)) { active.delete(id); el.classList.remove('on'); }
             else { active.add(id); el.classList.add('on'); }
-            updateHUD();
-            save();
-        }
-
-        function panic() {
-            active.clear();
-            document.querySelectorAll('.mod').forEach(m => m.classList.remove('on'));
-            updateHUD();
-            save();
-            alert("PANIC: All Modules Disabled!");
+            updateHUD(); save();
         }
 
         function openSet(id, name) {
+            currentBindingId = id;
             document.getElementById('set-title').textContent = name;
+            document.getElementById('bind-display').textContent = keybinds[id] || "NONE";
             let b = document.getElementById('set-body');
             b.innerHTML = '';
             let s = modConfigs[id];
             for(let key in s) {
-                let row = document.createElement('div');
-                row.className = 'row';
+                let row = document.createElement('div'); row.className = 'row';
                 row.innerHTML = `<span>${key}</span>`;
                 let val = s[key];
                 let input;
                 if(typeof val === 'number') {
+                    let wrapper = document.createElement('div');
                     input = document.createElement('input');
-                    input.type = 'range'; input.min = 0; input.max = 20; input.step = 0.1;
+                    input.type = 'range'; input.min = 0; input.max = (key === "Delay" ? 1000 : 10); input.step = 0.1;
                     input.value = val;
-                    input.oninput = (e) => { s[key] = parseFloat(e.target.value); save(); };
+                    let display = document.createElement('span'); display.className = 'val-num'; display.textContent = val;
+                    input.oninput = (e) => { s[key] = parseFloat(e.target.value); display.textContent = e.target.value; save(); };
+                    wrapper.appendChild(input); wrapper.appendChild(display);
+                    input = wrapper;
                 } else if(typeof val === 'boolean') {
-                    input = document.createElement('input');
-                    input.type = 'checkbox'; input.checked = val;
+                    input = document.createElement('input'); input.type = 'checkbox'; input.checked = val;
                     input.onchange = (e) => { s[key] = e.target.checked; save(); };
-                } else if(Array.isArray(val)) {
-                    input = document.createElement('select');
-                    val.forEach(o => { let opt = document.createElement('option'); opt.value = o; opt.textContent = o; input.appendChild(opt); });
                 } else if(key === "Color") {
-                    input = document.createElement('input');
-                    input.type = 'color'; input.value = val;
+                    input = document.createElement('input'); input.type = 'color'; input.value = val;
                     input.oninput = (e) => { s[key] = e.target.value; save(); };
                 }
-                row.appendChild(input);
-                b.appendChild(row);
+                row.appendChild(input); b.appendChild(row);
             }
             document.getElementById('set-win').style.display = 'block';
             document.getElementById('blur').style.display = 'block';
         }
 
-        function updateHUD() {
-            document.getElementById('hud').innerHTML = Array.from(active).sort().map(id => `<div class="hud-mod">${id}</div>`).join('');
+        function startBinding() {
+            document.getElementById('bind-display').textContent = "...PRESS KEY...";
+            const handler = (e) => {
+                let key = e.key.toUpperCase();
+                if(key === "ESCAPE") key = null;
+                keybinds[currentBindingId] = key;
+                document.getElementById('bind-display').textContent = key || "NONE";
+                document.getElementById('label-' + currentBindingId).textContent = key || "";
+                window.removeEventListener('keydown', handler);
+                save();
+            };
+            window.addEventListener('keydown', handler);
         }
 
+        window.addEventListener('keydown', (e) => {
+            if(document.activeElement.tagName === "INPUT") return;
+            let key = e.key.toUpperCase();
+            for(let id in keybinds) {
+                if(keybinds[id] === key) toggle(id);
+            }
+        });
+
+        function panic() { active.clear(); document.querySelectorAll('.mod').forEach(m => m.classList.remove('on')); updateHUD(); save(); alert("PANIC!"); }
+        function updateHUD() { document.getElementById('hud').innerHTML = Array.from(active).sort().map(id => `<div class="hud-mod">${id}</div>`).join(''); }
         function openF() { document.getElementById('f-win').style.display = 'block'; document.getElementById('blur').style.display = 'block'; }
         function addF() { let i = document.getElementById('f-in'); if(i.value) { friends.push(i.value); i.value = ''; renderF(); save(); } }
         function renderF() { document.getElementById('f-list').innerHTML = friends.map(f => `<span style="background:var(--main); padding:3px 8px; border-radius:4px; margin:3px; display:inline-block; font-size:11px;">${f}</span>`).join(''); }
-        function closeAll() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.getElementById('blur').style.display = 'none'; }
+        function closeAll() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.getElementById('blur').style.display = 'none'; currentBindingId = null; }
         function filter() { let q = document.getElementById('search').value.toLowerCase(); document.querySelectorAll('.mod').forEach(m => m.style.display = m.textContent.toLowerCase().includes(q) ? 'block' : 'none'); }
 
         function drag(w, h) {
@@ -225,13 +202,15 @@
         }
 
         function save() {
-            localStorage.setItem('stealth_active', JSON.stringify(Array.from(active)));
-            localStorage.setItem('stealth_friends', JSON.stringify(friends));
-            localStorage.setItem('stealth_configs', JSON.stringify(modConfigs));
+            localStorage.setItem('s_active', JSON.stringify(Array.from(active)));
+            localStorage.setItem('s_friends', JSON.stringify(friends));
+            localStorage.setItem('s_configs', JSON.stringify(modConfigs));
+            localStorage.setItem('s_binds', JSON.stringify(keybinds));
         }
 
         function load() {
-            let a = localStorage.getItem('stealth_active'), f = localStorage.getItem('stealth_friends'), c = localStorage.getItem('stealth_configs');
+            let a = localStorage.getItem('s_active'), f = localStorage.getItem('s_friends'), c = localStorage.getItem('s_configs'), b = localStorage.getItem('s_binds');
+            if(b) { keybinds = JSON.parse(b); for(let id in keybinds) { let lbl = document.getElementById('label-'+id); if(lbl) lbl.textContent = keybinds[id]; } }
             if(a) { active = new Set(JSON.parse(a)); active.forEach(id => { let el = document.getElementById("btn-"+id); if(el) el.classList.add('on'); }); updateHUD(); }
             if(f) { friends = JSON.parse(f); renderF(); }
             if(c) { modConfigs = JSON.parse(c); }
