@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stealth Client | Infinite</title>
+    <title>Stealth Client | 100% Settings</title>
     <style>
         :root { --main: #5865f2; --bg: #050505; --win: #0f0f0f; --brd: #222; }
         body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; touch-action: none; }
         
         /* HUD */
         #hud { position: fixed; top: 10px; left: 10px; pointer-events: none; z-index: 50; }
-        .hud-mod { color: var(--main); font-weight: 900; font-size: 12px; text-shadow: 1px 1px #000; text-transform: uppercase; line-height: 1.1; }
+        .hud-mod { color: var(--main); font-weight: 900; font-size: 13px; text-shadow: 1px 1px #000; text-transform: uppercase; line-height: 1.2; }
         
         /* SEARCH & COMMANDS */
         #top-bar { position: absolute; top: 10px; width: 100%; display: flex; justify-content: center; z-index: 100; }
@@ -18,25 +18,26 @@
         input[type="text"] { background: transparent; border: none; color: white; outline: none; width: 300px; font-family: monospace; }
 
         /* WINDOWS */
-        .window { position: absolute; width: 170px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; display: flex; flex-direction: column; }
-        .head { background: #000; padding: 10px; text-align: center; font-size: 10px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        .window { position: absolute; width: 180px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; display: flex; flex-direction: column; box-shadow: 0 5px 20px #000; }
+        .head { background: #000; padding: 10px; text-align: center; font-size: 11px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
         .window.collapsed .list { display: none; }
 
-        .list { max-height: 300px; overflow-y: auto; scrollbar-width: none; }
+        .list { max-height: 350px; overflow-y: auto; scrollbar-width: none; }
         .list::-webkit-scrollbar { display: none; }
-        .mod { padding: 8px 10px; font-size: 11px; color: #666; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .mod { padding: 9px 12px; font-size: 11px; color: #777; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
         .mod.on { color: white; background: var(--main); font-weight: bold; }
-        .bind-hint { font-size: 8px; opacity: 0.5; color: #fff; }
+        .bind-hint { font-size: 9px; opacity: 0.6; color: var(--main); font-weight: bold; }
 
         /* SETTINGS MODAL */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; background: #0c0c0c; border: 2px solid var(--main); padding: 20px; display: none; z-index: 2000; border-radius: 8px; }
-        .row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 12px; align-items: center; }
-        .val-num { color: var(--main); font-weight: bold; min-width: 30px; text-align: right; }
-        .btn { background: var(--main); border: none; color: white; width: 100%; padding: 10px; border-radius: 4px; margin-top: 10px; font-weight: bold; cursor: pointer; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: #0c0c0c; border: 2px solid var(--main); padding: 25px; display: none; z-index: 2000; border-radius: 10px; box-shadow: 0 0 40px #000; }
+        .row { display: flex; justify-content: space-between; margin: 15px 0; font-size: 13px; align-items: center; }
+        .val-num { color: var(--main); font-weight: bold; min-width: 40px; text-align: right; font-family: monospace; }
+        .btn { background: var(--main); border: none; color: white; width: 100%; padding: 12px; border-radius: 5px; margin-top: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(3px); display: none; z-index: 1500; }
 
-        input[type="range"] { width: 100px; accent-color: var(--main); }
-        input[type="color"] { border: none; width: 25px; height: 25px; background: none; cursor: pointer; }
+        input[type="range"] { width: 110px; accent-color: var(--main); cursor: pointer; }
+        input[type="color"] { border: none; width: 30px; height: 30px; background: none; cursor: pointer; }
+        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--main); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -45,45 +46,52 @@
     <div class="overlay" id="blur" onclick="closeAll()"></div>
     
     <div id="top-bar">
-        <div class="box"><input type="text" id="cmd-in" placeholder="Search or %hclip 100..." onkeyup="handleCmd(event)"></div>
+        <div class="box"><input type="text" id="cmd-in" placeholder="Suche oder %hclip 100..." onkeyup="handleCmd(event)"></div>
     </div>
 
     <div class="modal" id="set-win">
-        <h3 id="set-title" style="margin:0 0 15px 0; color:var(--main); font-size:14px;">Settings</h3>
+        <h3 id="set-title" style="margin:0 0 20px 0; color:var(--main); text-transform:uppercase; letter-spacing:1px;">Settings</h3>
         <div id="set-body"></div>
-        <div class="row" style="border-top:1px solid #222; padding-top:10px;">
-            <span>Bind</span>
-            <button id="bind-display" style="background:#1a1a1a; color:var(--main); border:1px solid var(--main); padding:4px 8px; cursor:pointer;" onclick="startBinding()">NONE</button>
+        <div class="row" style="border-top: 1px solid #222; padding-top:15px; margin-top:20px;">
+            <span>Keyboard Bind</span>
+            <button id="bind-display" style="background:#1a1a1a; color:var(--main); border:1px solid var(--main); padding:6px 12px; cursor:pointer; font-weight:bold;" onclick="startBinding()">NONE</button>
         </div>
-        <button class="btn" onclick="closeAll()">APPLY CONFIG</button>
+        <button class="btn" onclick="closeAll()">Save Settings</button>
     </div>
 
     <script>
-        // Massive Datenbank mit 200+ Modulen und spezifischen Settings
         const rawMods = {
             "Combat": ["KillAura", "Velocity", "Reach", "Criticals", "TriggerBot", "AntiBot", "TPAura", "FastBow", "Aimbot", "AutoClicker", "AutoWeapon", "AutoTotem", "SmoothAim", "BowPredict", "AutoSoup", "InfiniteReach", "Regen", "NoFriends", "KeepSprint", "ArmorBreaker", "LegitAura", "HitboxExpander", "TargetStrafe", "FastHeal", "AutoPot", "Backtrack", "ReachAura", "ClickAura", "NoMiss"],
             "Movement": ["Fly", "Speed", "Step", "LongJump", "Jesus", "Spider", "NoSlow", "AutoSprint", "VClip", "HClip", "SafeWalk", "Blink", "Phase", "HighJump", "Flight", "InventoryWalk", "Parkour", "FastLadder", "WallClimb", "Glide", "NoFall", "AntiVoid", "Scaffold", "Tower", "SpeedBridge", "BoatFly", "EntitySpeed", "AirJump", "IceSpeed", "MiniJump", "Sneak"],
             "Visuals": ["ESP", "Tracers", "Chams", "NameTags", "FullBright", "X-Ray", "Snaplines", "ChestESP", "Breadcrumbs", "ItemESP", "NoRender", "TracerLine", "Freecam", "Radar", "StorageESP", "BlockESP", "VoidESP", "MobESP", "ChunkESP", "SelectionBox", "PlayerList", "Scoreboard", "ChinaHat", "ArmorHUD", "PotionHUD", "Crosshair", "TabGui", "TargetHUD"],
-            "Player": ["AutoEat", "AutoTool", "AutoArmor", "ChestStealer", "InventoryManager", "AutoMine", "FastPlace", "FastBreak", "NoRotate", "AutoRelog", "AutoRespawn", "AutoFish", "Mucker", "AutoWalk", "AntiFire", "AntiCactus", "Zoot", "Derp", "SkinDerp", "NoPitch", "FastEat", "ChestStealer", "LiquidInteract", "GhostHand", "AutoJump"],
+            "Player": ["AutoEat", "AutoTool", "AutoArmor", "ChestStealer", "InventoryManager", "AutoMine", "FastPlace", "FastBreak", "NoRotate", "AutoRelog", "AutoRespawn", "AutoFish", "Mucker", "AutoWalk", "AntiFire", "AntiCactus", "Zoot", "Derp", "SkinDerp", "NoPitch", "FastEat", "LiquidInteract", "GhostHand", "AutoJump"],
             "Exploit": ["Timer", "Disabler", "ServerCrash", "PacketFly", "NoClip", "AntiHunger", "PingSpoof", "Teleport", "CoordExploit", "CommandSpam", "GodMode", "AntiKnockback", "Infinity", "PortalGod", "LightningTrack", "BedAura", "CivBreak", "VehicleOneHit", "PluginFinder", "CreativeDrop"],
             "Misc": ["Spammer", "Annoyer", "ChatBypass", "NoteBot", "AutoConfig", "Protocol", "MidClick", "FancyChat", "AutoReply", "AutoGG", "FakePlayer", "NoWeather", "NoOverlay", "FastWorld", "AutoAd", "Translator", "Cape", "Panic", "ClickGUI", "SelfDestruct", "DiscordRPC", "NameProtect", "StreamerMode"]
         };
 
         let active = new Set(), configs = {}, binds = {}, winPos = {}, currentId = null;
 
-        // Hilfsfunktion für spezifische Settings basierend auf dem Modul-Namen
-        function getEach(name, cat) {
-            if(cat === "Visuals") return { "Color": "#5865f2", "Alpha": 120, "Active": true };
-            if(name.includes("Aura") || name.includes("Reach")) return { "Range": 4.2, "CPS": 12, "Raytrace": true };
-            if(name.includes("Speed") || name.includes("Fly")) return { "Speed": 2.0, "Boost": 1.5, "Damage": false };
-            if(name.includes("Clip")) return { "Distance": 5.0 };
-            return { "Value": 1.0, "Toggle": true };
+        // Erzeugt für JEDES Modul passende Settings
+        function generateSettings(name, cat) {
+            let s = {};
+            if (cat === "Combat") {
+                s["Range"] = 4.2; s["CPS"] = 12.0; s["Walls"] = false; s["Predict"] = true;
+            } else if (cat === "Movement") {
+                s["Speed"] = 1.5; s["Motion"] = 0.6; s["Jump"] = true; s["Bypass"] = true;
+            } else if (cat === "Visuals") {
+                s["Color"] = "#5865f2"; s["Alpha"] = 150.0; s["Lines"] = true; s["Box"] = true;
+            } else if (cat === "Player") {
+                s["Delay"] = 50.0; s["Silent"] = true; s["Packet"] = false;
+            } else {
+                s["Value"] = 1.0; s["Extra"] = false;
+            }
+            return s;
         }
 
         function build() {
-            let savedPos = localStorage.getItem('st_pos_v4');
+            let savedPos = localStorage.getItem('st_pos_final');
             winPos = savedPos ? JSON.parse(savedPos) : {};
-            let x = 20, y = 80;
+            let x = 25, y = 80;
 
             for (let cat in rawMods) {
                 let win = document.createElement('div'); win.className = 'window';
@@ -97,7 +105,7 @@
                 let l = document.createElement('div'); l.className = 'list';
                 rawMods[cat].forEach(name => {
                     let id = name.toLowerCase().replace(/\s/g, "");
-                    if(!configs[id]) configs[id] = getEach(name, cat);
+                    if(!configs[id]) configs[id] = generateSettings(name, cat);
                     
                     let m = document.createElement('div'); m.className = 'mod'; m.id = "btn-" + id;
                     m.innerHTML = `<span>${name}</span><span id="lbl-${id}" class="bind-hint"></span>`;
@@ -109,7 +117,7 @@
                 
                 win.appendChild(h); win.appendChild(l); document.body.appendChild(win);
                 drag(win, h, cat);
-                x += 180; if(x > window.innerWidth - 180) { x = 20; y += 350; }
+                x += 190; if(x > window.innerWidth - 180) { x = 25; y += 400; }
             }
             load();
         }
@@ -129,7 +137,7 @@
                     r.appendChild(i);
                 } else if(typeof s[k] === 'number') {
                     let wrap = document.createElement('div'); wrap.style.display="flex"; wrap.style.alignItems="center";
-                    let i = document.createElement('input'); i.type='range'; i.min=0; i.max=20; i.step=0.1; i.value=s[k];
+                    let i = document.createElement('input'); i.type='range'; i.min=0; i.max= (k==="Delay"?500:20); i.step=0.1; i.value=s[k];
                     let d = document.createElement('span'); d.className='val-num'; d.textContent=s[k];
                     i.oninput = (e) => { s[k] = parseFloat(e.target.value); d.textContent=e.target.value; save(); };
                     wrap.append(i, d); r.appendChild(wrap);
@@ -151,12 +159,13 @@
         }
 
         function handleCmd(e) {
-            if (e.key === "Enter" && e.target.value.startsWith("%")) {
-                let args = e.target.value.substring(1).split(" ");
-                alert("Executed Command: " + args[0] + " with value " + args[1]);
+            let v = e.target.value;
+            if (e.key === "Enter" && v.startsWith("%")) {
+                let a = v.substring(1).split(" ");
+                alert("Befehl: " + a[0] + " Wert: " + (a[1] || "0"));
                 e.target.value = "";
             } else {
-                let q = e.target.value.toLowerCase();
+                let q = v.toLowerCase();
                 document.querySelectorAll('.mod').forEach(m => m.style.display = m.textContent.toLowerCase().includes(q) ? 'flex' : 'none');
             }
         }
@@ -165,14 +174,14 @@
             let d = false, ox, oy;
             const s = (e) => { d = true; let c = e.touches ? e.touches[0] : e; ox = c.clientX-w.offsetLeft; oy = c.clientY-w.offsetTop; };
             const m = (e) => { if(!d) return; let c = e.touches ? e.touches[0] : e; w.style.left = (c.clientX-ox)+'px'; w.style.top = (c.clientY-oy)+'px'; };
-            const stop = () => { if(d) { d = false; winPos[cat] = { x: w.style.left, y: w.style.top }; localStorage.setItem('st_pos_v4', JSON.stringify(winPos)); } };
+            const stop = () => { if(d) { d = false; winPos[cat] = { x: w.style.left, y: w.style.top }; localStorage.setItem('st_pos_final', JSON.stringify(winPos)); } };
             h.addEventListener('mousedown', s); h.addEventListener('touchstart', s);
             window.addEventListener('mousemove', m); window.addEventListener('touchmove', m);
             window.addEventListener('mouseup', stop); window.addEventListener('touchend', stop);
         }
 
         function startBinding() {
-            document.getElementById('bind-display').textContent = "PRESS...";
+            document.getElementById('bind-display').textContent = "...";
             const h = (e) => {
                 let k = e.key.toUpperCase(); binds[currentId] = k;
                 document.getElementById('bind-display').textContent = k;
@@ -189,7 +198,12 @@
 
         function updateHUD() { document.getElementById('hud').innerHTML = Array.from(active).sort().map(id => `<div class="hud-mod">${id}</div>`).join(''); }
         function closeAll() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.getElementById('blur').style.display = 'none'; }
-        function save() { localStorage.setItem('st_act', JSON.stringify(Array.from(active))); localStorage.setItem('st_cfg', JSON.stringify(configs)); localStorage.setItem('st_bnd', JSON.stringify(binds)); }
+        
+        function save() { 
+            localStorage.setItem('st_act', JSON.stringify(Array.from(active))); 
+            localStorage.setItem('st_cfg', JSON.stringify(configs)); 
+            localStorage.setItem('st_bnd', JSON.stringify(binds)); 
+        }
         function load() {
             let a=localStorage.getItem('st_act'), c=localStorage.getItem('st_cfg'), b=localStorage.getItem('st_bnd');
             if(b) { binds=JSON.parse(b); for(let id in binds) { if(document.getElementById('lbl-'+id)) document.getElementById('lbl-'+id).textContent=binds[id]; } }
