@@ -3,267 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stealth Client Preview</title>
+    <title>Stealth Client v5</title>
     <style>
-        :root {
-            --main-blue: #5865f2;
-            --bg-dark: #0d0d0d;
-            --panel-bg: #121212;
-            --header-bg: #0a0a0a;
-            --module-bg: #1a1a1a;
-            --border-color: #333333;
-            --text-light: #eeeeee;
-        }
+        :root { --main: #5865f2; --bg: #0a0a0a; --win: #121212; --brd: #222; }
+        body { background: #050505; color: #eee; font-family: sans-serif; margin: 0; overflow: hidden; touch-action: none; }
 
-        body {
-            background: var(--bg-dark);
-            color: var(--text-light);
-            font-family: 'Segoe UI', sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            margin: 0;
-            touch-action: none;
-        }
+        /* HUD & PANIC */
+        #hud { position: fixed; top: 10px; left: 10px; pointer-events: none; }
+        .hud-mod { color: var(--main); font-weight: bold; font-size: 14px; text-transform: uppercase; }
+        #panic-btn { position: fixed; top: 10px; right: 10px; background: #ff4444; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; z-index: 1000; }
 
-        /* HUD */
-        #hud { position: fixed; bottom: 20px; right: 20px; text-align: right; pointer-events: none; z-index: 50; }
-        .hud-item { color: var(--main-blue); font-weight: bold; font-size: 18px; text-shadow: 2px 2px #000; margin-bottom: 2px; }
+        /* TOP BAR */
+        #top { position: absolute; top: 50px; width: 100%; display: flex; justify-content: center; gap: 10px; }
+        .box { background: var(--win); border: 1px solid var(--brd); padding: 8px; border-radius: 4px; }
+        input[type="text"] { background: transparent; border: none; color: white; outline: none; width: 140px; }
 
-        /* SEARCH & FRIENDS */
-        #top-bar { position: absolute; top: 15px; width: 100%; display: flex; justify-content: center; gap: 15px; z-index: 100; }
-        .glass-box { background: rgba(20,20,20,0.95); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); display: flex; align-items: center; }
-        #search-bar { background: transparent; border: none; color: white; outline: none; width: 180px; }
+        /* GUI WINDOWS */
+        .window { position: absolute; width: 170px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; }
+        .head { background: #000; padding: 12px; text-align: center; font-size: 11px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); }
+        .list { display: block; }
+        .mod { padding: 12px; font-size: 12px; color: #777; border-bottom: 1px solid #1a1a1a; cursor: pointer; position: relative; }
+        .mod.on { color: white; background: var(--main); }
 
-        /* CATEGORIES */
-        .category { position: absolute; width: 175px; background: var(--panel-bg); border: 1px solid var(--border-color); box-shadow: 0 8px 25px rgba(0,0,0,0.9); z-index: 10; border-radius: 4px; }
-        .header { background: var(--header-bg); padding: 14px; font-weight: bold; font-size: 11px; text-align: center; cursor: move; border-bottom: 2px solid var(--main-blue); color: #fff; text-transform: uppercase; }
+        /* MODAL */
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; background: #0f0f0f; border: 1px solid var(--main); padding: 20px; display: none; z-index: 2000; border-radius: 8px; }
+        .row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 13px; align-items: center; }
+        .btn { background: var(--main); border: none; color: white; width: 100%; padding: 10px; border-radius: 4px; margin-top: 10px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 1500; }
 
-        /* MODULES */
-        .module-list { display: none; background: var(--module-bg); }
-        .module-list.open { display: block; }
-        .module { padding: 12px 15px; font-size: 13px; color: #888; border-bottom: 1px solid #282828; cursor: pointer; transition: 0.2s; }
-        .module.active { color: white; background: var(--main-blue); font-weight: bold; }
-
-        /* MODALS */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 310px; background: var(--header-bg); border: 1px solid var(--main-blue); padding: 25px; display: none; z-index: 2000; border-radius: 12px; box-shadow: 0 0 50px #000; }
-        .setting-row { display: flex; justify-content: space-between; margin: 12px 0; align-items: center; font-size: 13px; }
-        .btn-action { background: var(--main-blue); border: none; color: white; width: 100%; padding: 12px; margin-top: 15px; cursor: pointer; border-radius: 6px; font-weight: bold; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
-        
-        /* INPUTS */
-        input[type="range"] { width: 100px; accent-color: var(--main-blue); }
-        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--main-blue); }
-        select { background: #222; color: #fff; border: 1px solid #444; padding: 4px; border-radius: 4px; }
+        /* FRIENDS */
+        .f-tag { background: var(--main); padding: 2px 6px; border-radius: 4px; margin: 2px; display: inline-block; font-size: 11px; }
     </style>
 </head>
 <body>
 
-    <div class="overlay" id="overlay" onclick="closeModals()"></div>
+    <button id="panic-btn" onclick="simulateKick()">SERVER KICK (PANIC)</button>
     <div id="hud"></div>
+    <div class="overlay" id="blur" onclick="closeAll()"></div>
     
-    <div id="top-bar">
-        <div class="glass-box"><input type="text" id="search-bar" placeholder="Cheat suchen..." onkeyup="filterHacks()"></div>
-        <div class="glass-box" onclick="openFriends()" style="cursor:pointer; color:var(--main-blue); font-weight:bold;">FRIENDS</div>
+    <div id="top">
+        <div class="box"><input type="text" placeholder="Suchen..." onkeyup="search(this.value)"></div>
+        <div class="box" onclick="openFriends()" style="cursor:pointer; color:var(--main)">FRIENDS</div>
     </div>
 
-    <div class="modal" id="settings-modal">
-        <h3 id="set-title" style="color:var(--main-blue); margin: 0 0 15px 0;">Settings</h3>
-        <div id="set-content"></div>
-        <button class="btn-action" onclick="closeModals()">SAVE</button>
+    <div class="modal" id="set-win">
+        <h3 id="set-name" style="color:var(--main); margin-top:0;">Settings</h3>
+        <div id="set-body"></div>
+        <button class="btn" onclick="closeAll()">SAVE</button>
     </div>
 
-    <div class="modal" id="friends-modal">
-        <h3 style="color:var(--main-blue); margin: 0 0 15px 0;">FRIEND MANAGER</h3>
-        <div style="display:flex; gap:8px;">
-            <input type="text" id="new-friend" placeholder="Name..." style="background:#1a1a1a; border:1px solid #333; color:white; flex:1; padding:8px; border-radius:4px;">
-            <button onclick="addFriend()" style="background:var(--main-blue); border:none; color:white; padding:8px; border-radius:4px;">ADD</button>
-        </div>
-        <div id="friends-list" style="margin-top:10px; min-height:60px; background:#050505; border:1px solid #222; padding:10px;"></div>
-        <button class="btn-action" onclick="closeModals()">CLOSE</button>
+    <div class="modal" id="f-win">
+        <h3 style="color:var(--main); margin-top:0;">FRIENDS</h3>
+        <input type="text" id="f-in" style="background:#1a1a1a; width:70%; padding:5px;">
+        <button onclick="addF()" style="padding:5px;">ADD</button>
+        <div id="f-list" style="margin-top:10px;"></div>
+        <button class="btn" onclick="closeAll()">CLOSE</button>
     </div>
 
     <script>
-        // Modul-Konfiguration mit SPEZIFISCHEN Settings
-        const config = {
+        // JEDER CHEAT HAT NUN EIGENE SETTINGS
+        const cheats = {
             "Combat": [
-                { name: "KillAura", settings: { Range: 4.2, CPS: 12, Mode: ["Switch", "Single", "Multi"], RayTrace: true } },
-                { name: "Velocity", settings: { Horizontal: 0, Vertical: 0, Chance: 100 } },
-                { name: "Reach", settings: { Reach: 3.5, Combo: false } },
-                { name: "AutoTotem", settings: { Health: 4.5, Soft: true } },
-                { name: "Criticals", settings: { Mode: ["Packet", "Jump", "MiniJump"] } }
+                { id: "aura", name: "KillAura", sets: { Range: 4.2, CPS: 12, Mode: ["Switch", "Single"], Blocking: true } },
+                { id: "velo", name: "Velocity", sets: { Horizontal: 0, Vertical: 0, Chance: 100 } },
+                { id: "reach", name: "Reach", sets: { Distance: 3.5, Misplace: false } }
             ],
             "Movement": [
-                { name: "Fly", settings: { Speed: 1.5, Mode: ["Vanilla", "Motion", "Grim"], Damage: false } },
-                { name: "Speed", settings: { Speed: 0.8, Jump: true, Mode: ["Bhop", "Strafe", "OnGround"] } },
-                { name: "Step", settings: { Height: 1.5, Smooth: true } },
-                { name: "LongJump", settings: { Boost: 2.5, AutoDisable: true } }
+                { id: "fly", name: "Fly", sets: { Speed: 1.5, Mode: ["Vanilla", "Grim", "AAC"], Verus: false } },
+                { id: "speed", name: "Speed", sets: { Speed: 0.6, "Auto Jump": true, Mode: ["Bhop", "Strafe"] } },
+                { id: "long", name: "LongJump", sets: { Boost: 2.5, "Timer Boost": 1.2 } }
             ],
             "Visuals": [
-                { name: "ESP", settings: { Players: true, Friends: true, "Aggro Mobs": false, "Passive Mobs": false, Items: false, Box: true, Tracers: false } },
-                { name: "FullBright", settings: { Mode: ["Gamma", "Potion"] } },
-                { name: "X-Ray", settings: { Opacity: 120, Diamonds: true, Iron: false } },
-                { name: "Freecam", settings: { Speed: 1.0 } }
+                { id: "esp", name: "ESP", sets: { Players: true, Friends: true, Mobs: false, Box: true, Tracers: false, Color: "#5865f2" } },
+                { id: "chams", name: "Chams", sets: { Red: 255, Green: 255, Blue: 255, Alpha: 100 } },
+                { id: "xray", name: "X-Ray", sets: { Diamonds: true, Gold: true, Iron: false, Opacity: 100 } }
             ],
-            "World": [
-                { name: "Scaffold", settings: { Expand: 3, "Tower Speed": 0.8, SafeWalk: true, Rotations: true } },
-                { name: "AutoMine", settings: { Range: 5.0, "Hardness Limit": 2.0 } }
+            "Player": [
+                { id: "scaf", name: "Scaffold", sets: { Expand: 1, Tower: true, "Safe Walk": true, Delay: 50 } },
+                { id: "tool", name: "AutoTool", sets: { Weapons: true, "Fast Switch": true } }
             ]
         };
 
-        let activeHacks = new Set();
+        let active = new Set();
         let friends = [];
-        let modData = {}; // Speichert die aktuellen Werte der Settings
+        let values = {}; // Hier liegen die User-Einstellungen
 
-        function init() {
-            let x = 30, y = 100, i = 0;
-            for (let cat in config) {
-                let win = document.createElement('div');
-                win.className = 'category';
-                win.style.left = x + 'px'; win.style.top = y + 'px';
+        function build() {
+            let x = 20, y = 100;
+            for (let cat in cheats) {
+                let w = document.createElement('div');
+                w.className = 'window';
+                w.style.left = x + 'px'; w.style.top = y + 'px';
                 
-                let head = document.createElement('div');
-                head.className = 'header';
-                head.textContent = cat;
-                head.onclick = () => win.querySelector('.module-list').classList.toggle('open');
+                let h = document.createElement('div');
+                h.className = 'head';
+                h.textContent = cat.toUpperCase();
+                h.onclick = () => { let l = w.querySelector('.list'); l.style.display = l.style.display === 'none' ? 'block' : 'none'; };
                 
-                let list = document.createElement('div');
-                list.className = 'module-list';
+                let l = document.createElement('div');
+                l.className = 'list';
                 
-                config[cat].forEach(mod => {
-                    let id = mod.name.toLowerCase();
-                    modData[id] = mod.settings; // Standardwerte laden
+                cheats[cat].forEach(c => {
+                    values[c.id] = c.sets;
+                    let m = document.createElement('div');
+                    m.className = 'mod';
+                    m.id = "btn-" + c.id;
+                    m.textContent = c.name;
                     
-                    let div = document.createElement('div');
-                    div.className = 'module';
-                    div.id = id;
-                    div.textContent = mod.name;
+                    let touch;
+                    m.ontouchstart = () => touch = Date.now();
+                    m.ontouchend = () => { if(Date.now()-touch > 600) openSettings(c.id, c.name); else toggle(c.id); };
+                    m.onclick = () => toggle(c.id);
+                    m.ondblclick = () => openSettings(c.id, c.name);
                     
-                    let start;
-                    div.ontouchstart = () => { start = Date.now(); };
-                    div.ontouchend = () => {
-                        if(Date.now() - start > 600) openSettings(mod.name, id);
-                        else toggle(mod.name, div);
-                    };
-                    div.onclick = () => toggle(mod.name, div);
-                    div.ondblclick = () => openSettings(mod.name, id);
-                    
-                    list.appendChild(div);
+                    l.appendChild(m);
                 });
-
-                win.appendChild(head); win.appendChild(list);
-                document.body.appendChild(win);
-                makeDraggable(win, head);
-                x += 185; i++;
-                if(i >= 4) { x = 30; y += 320; i = 0; }
+                
+                w.appendChild(h); w.appendChild(l);
+                document.body.appendChild(w);
+                drag(w, h);
+                x += 180;
             }
-            loadState();
         }
 
-        function toggle(name, el) {
-            let id = name.toLowerCase();
-            if(activeHacks.has(id)) { activeHacks.delete(id); el.classList.remove('active'); }
-            else { activeHacks.add(id); el.classList.add('active'); }
+        function toggle(id) {
+            let el = document.getElementById("btn-" + id);
+            if(active.has(id)) { active.delete(id); el.classList.remove('on'); }
+            else { active.add(id); el.classList.add('on'); }
             updateHUD();
-            saveState();
+        }
+
+        function simulateKick() {
+            active.clear();
+            document.querySelectorAll('.mod').forEach(m => m.classList.remove('on'));
+            updateHUD();
+            alert("SERVER KICK: Alle Module deaktiviert!");
+        }
+
+        function openSettings(id, name) {
+            document.getElementById('set-name').textContent = name;
+            let b = document.getElementById('set-body');
+            b.innerHTML = '';
+            
+            let s = values[id];
+            for(let key in s) {
+                let r = document.createElement('div');
+                r.className = 'row';
+                r.innerHTML = `<span>${key}</span>`;
+                
+                let val = s[key];
+                let input;
+                
+                if(typeof val === 'number') {
+                    input = document.createElement('input');
+                    input.type = 'range'; input.min = 0; input.max = 20; input.step = 0.1;
+                    input.value = val;
+                    input.oninput = (e) => s[key] = parseFloat(e.target.value);
+                } else if(typeof val === 'boolean') {
+                    input = document.createElement('input');
+                    input.type = 'checkbox'; input.checked = val;
+                    input.onchange = (e) => s[key] = e.target.checked;
+                } else if(Array.isArray(val)) {
+                    input = document.createElement('select');
+                    val.forEach(o => { let opt = document.createElement('option'); opt.value = o; opt.textContent = o; input.appendChild(opt); });
+                } else if(key === "Color") {
+                    input = document.createElement('input');
+                    input.type = 'color'; input.value = val;
+                    input.oninput = (e) => s[key] = e.target.value;
+                }
+                
+                r.appendChild(input);
+                b.appendChild(r);
+            }
+            document.getElementById('set-win').style.display = 'block';
+            document.getElementById('blur').style.display = 'block';
         }
 
         function updateHUD() {
-            let hud = document.getElementById('hud');
-            hud.innerHTML = Array.from(activeHacks).sort().map(h => `<div class="hud-item">${h.charAt(0).toUpperCase() + h.slice(1)}</div>`).join('');
+            let h = document.getElementById('hud');
+            h.innerHTML = Array.from(active).map(id => `<div class="hud-mod">${id}</div>`).join('');
         }
 
-        function openSettings(name, id) {
-            document.getElementById('set-title').textContent = name + " SETTINGS";
-            let content = document.getElementById('set-content');
-            content.innerHTML = '';
-            
-            let settings = modData[id];
-            for (let s in settings) {
-                let row = document.createElement('div');
-                row.className = 'setting-row';
-                row.innerHTML = `<span>${s}</span>`;
-                
-                let val = settings[s];
-                let input;
-                
-                if (typeof val === 'number') {
-                    input = document.createElement('input');
-                    input.type = 'range';
-                    input.min = 0; input.max = val * 3 || 10; input.step = 0.1;
-                    input.value = val;
-                    input.oninput = (e) => { settings[s] = parseFloat(e.target.value); saveState(); };
-                } else if (typeof val === 'boolean') {
-                    input = document.createElement('input');
-                    input.type = 'checkbox';
-                    input.checked = val;
-                    input.onchange = (e) => { settings[s] = e.target.checked; saveState(); };
-                } else if (Array.isArray(val)) {
-                    input = document.createElement('select');
-                    val.forEach(opt => {
-                        let o = document.createElement('option');
-                        o.value = opt; o.textContent = opt;
-                        input.appendChild(o);
-                    });
-                    input.onchange = (e) => { saveState(); };
-                }
-                
-                row.appendChild(input);
-                content.appendChild(row);
-            }
-            
-            document.getElementById('settings-modal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-        }
+        function openFriends() { document.getElementById('f-win').style.display = 'block'; document.getElementById('blur').style.display = 'block'; }
+        function addF() { let i = document.getElementById('f-in'); if(i.value) { friends.push(i.value); i.value = ''; renderF(); } }
+        function renderF() { document.getElementById('f-list').innerHTML = friends.map(f => `<span class="f-tag">${f}</span>`).join(''); }
+        function closeAll() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); document.getElementById('blur').style.display = 'none'; }
 
-        function openFriends() {
-            document.getElementById('friends-modal').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-            renderFriends();
-        }
-
-        function addFriend() {
-            let n = document.getElementById('new-friend').value;
-            if(n && !friends.includes(n)) { friends.push(n); document.getElementById('new-friend').value = ''; renderFriends(); saveState(); }
-        }
-
-        function renderFriends() {
-            document.getElementById('friends-list').innerHTML = friends.map(f => `<span style="background:var(--main-blue); padding:3px 8px; border-radius:10px; margin:3px; display:inline-block; font-size:11px;">${f}</span>`).join('');
-        }
-
-        function closeModals() {
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            document.getElementById('overlay').style.display = 'none';
-        }
-
-        function filterHacks() {
-            let q = document.getElementById('search-bar').value.toLowerCase();
-            document.querySelectorAll('.module').forEach(m => m.style.display = m.textContent.toLowerCase().includes(q) ? 'block' : 'none');
-        }
-
-        function makeDraggable(win, head) {
+        function drag(w, h) {
             let d = false, ox, oy;
-            const s = (e) => { d = true; let c = e.touches ? e.touches[0] : e; ox = c.clientX - win.offsetLeft; oy = c.clientY - win.offsetTop; };
-            const m = (e) => { if(!d) return; let c = e.touches ? e.touches[0] : e; win.style.left = (c.clientX-ox)+'px'; win.style.top = (c.clientY-oy)+'px'; };
-            const e = () => d = false;
-            head.addEventListener('mousedown', s); head.addEventListener('touchstart', s);
-            window.addEventListener('mousemove', m); window.addEventListener('touchmove', m);
-            window.addEventListener('mouseup', e); window.addEventListener('touchend', e);
+            const start = (e) => { d = true; let c = e.touches ? e.touches[0] : e; ox = c.clientX-w.offsetLeft; oy = c.clientY-w.offsetTop; };
+            const move = (e) => { if(!d) return; let c = e.touches ? e.touches[0] : e; w.style.left = (c.clientX-ox)+'px'; w.style.top = (c.clientY-oy)+'px'; };
+            const stop = () => d = false;
+            h.addEventListener('mousedown', start); h.addEventListener('touchstart', start);
+            window.addEventListener('mousemove', move); window.addEventListener('touchmove', move);
+            window.addEventListener('mouseup', stop); window.addEventListener('touchend', stop);
         }
 
-        function saveState() {
-            localStorage.setItem('stealth_hacks', JSON.stringify(Array.from(activeHacks)));
-            localStorage.setItem('stealth_friends', JSON.stringify(friends));
-            localStorage.setItem('stealth_data', JSON.stringify(modData));
-        }
-
-        function loadState() {
-            let h = localStorage.getItem('stealth_hacks'), f = localStorage.getItem('stealth_friends'), d = localStorage.getItem('stealth_data');
-            if(h) { activeHacks = new Set(JSON.parse(h)); activeHacks.forEach(id => { let el = document.getElementById(id); if(el) el.classList.add('active'); }); updateHUD(); }
-            if(f) { friends = JSON.parse(f); }
-            if(d) { modData = JSON.parse(d); }
-        }
-
-        init();
+        build();
     </script>
 </body>
 </html>
