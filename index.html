@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        body { background: #080808; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
+        
+        /* HEADER UI */
+        #top-bar {
+            position: absolute; top: 15px; width: 100%; display: flex; justify-content: center; gap: 20px; z-index: 100;
+        }
+        .ui-box {
+            background: rgba(10,10,10,0.9); border: 1px solid #222; padding: 5px 15px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        #search-bar { background: transparent; border: none; color: white; outline: none; width: 150px; }
+
+        /* CATEGORY WINDOWS */
+        .category {
+            position: absolute; width: 175px; background: #0a0a0a; border: 1px solid #222;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8); user-select: none; touch-action: none; z-index: 10;
+        }
+        .header {
+            background: #050505; padding: 12px; font-weight: bold; font-size: 11px;
+            text-align: center; cursor: move; border-bottom: 2px solid #5865f2; color: #fff;
+        }
+
+        /* DROPDOWN LOGIK */
+        .module-container { display: block; background: #111; }
+        .module-container.closed { display: none; }
+
+        .module {
+            padding: 10px 15px; font-size: 12px; color: #999; border-bottom: 1px solid #1a1a1a;
+            cursor: pointer; text-align: left;
+        }
+        .module.active { color: #5865f2; border-left: 3px solid #5865f2; background: #151515; }
+
+        /* PANELS */
+        .panel {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 320px; background: #0f0f0f; border: 1px solid #5865f2;
+            box-shadow: 0 0 30px rgba(88, 101, 242, 0.5); padding: 20px;
+            display: none; z-index: 2000; border-radius: 8px;
+        }
+        .setting-row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 13px; align-items: center; }
+        .btn-main { background: #5865f2; border: none; color: white; width: 100%; padding: 10px; margin-top: 15px; cursor: pointer; border-radius: 4px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 1500; }
+        
+        .friend-tag { background: #5865f2; color: white; padding: 2px 8px; border-radius: 10px; display: inline-block; margin: 3px; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+    
+    <div id="top-bar">
+        <div class="ui-box"><input type="text" id="search-bar" placeholder="Suchen..." onkeyup="filter()"></div>
+        <div class="ui-box" onclick="openFriends()" style="cursor:pointer; color:#5865f2; font-weight:bold;">FRIENDS</div>
+    </div>
+
+    <div class="panel" id="settings-panel">
+        <h3 id="set-title" style="color:#5865f2">Settings</h3>
+        <div id="set-content"></div>
+        <button class="btn-main" onclick="closeAll()">SPEICHERN</button>
+    </div>
+
+    <div class="panel" id="friends-panel">
+        <h3 style="color:#5865f2">FRIEND MANAGER</h3>
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="friend-name" placeholder="Username..." style="background:#1a1a1a; border:1px solid #333; color:white; flex-grow:1; padding:5px;">
+            <button onclick="addFriend()" style="background:#222; color:white; border:none; padding:5px 10px;">ADD</button>
+        </div>
+        <div id="friends-list" style="margin-top:15px; min-height:50px; border:1px solid #222; padding:10px;"></div>
+        <button class="btn-main" onclick="closeAll()">FERTIG</button>
+    </div>
+
+    <script>
+        const categories = {
+            "Combat": ["KillAura", "Velocity", "Reach", "AutoTotem", "Criticals", "TriggerBot", "AimAssist", "AutoClicker"],
+            "Movement": ["Fly", "Speed", "Step", "NoFall", "Spider", "Jesus", "LongJump", "BunnyHop", "Sprint", "ElytraFlight"],
+            "Player": ["AutoEat", "AutoArmor", "ChestStealer", "Scaffold", "AutoTool", "FastUse", "Blink", "InvWalk"],
+            "Visuals": ["ESP", "Tracers", "FullBright", "NameTags", "X-Ray", "Freecam", "Chams", "StorageESP"],
+            "Exploit": ["Timer", "PacketFly", "Phase", "Disabler", "PingSpoof", "Crasher"],
+            "World": ["AutoMine", "FastPlace", "Nuker", "Tower", "TimerWorld"],
+            "Anarchy": ["AutoHighway", "ChunkScanner", "PortalGodMode", "BedAura"]
+        };
+
+        let friends = [];
+        let modStates = {};
+
+        function init() {
+            let x = 20, y = 80, count = 0;
+            for (let cat in categories) {
+                let win = document.createElement('div');
+                win.className = 'category';
+                win.style.left = x + 'px'; win.style.top = y + 'px';
+                
+                // Header mit Dropdown-Klick
+                let header = document.createElement('div');
+                header.className = 'header';
+                header.textContent = cat.toUpperCase();
+                header.onclick = (e) => toggleDropdown(win);
+                win.appendChild(header);
+
+                let container = document.createElement('div');
+                container.className = 'module-container';
+                
+                categories[cat].forEach(m => {
+                    let id = m.toLowerCase().replace(/\s/g, '');
+                    modStates[id] = false;
+                    let modDiv = document.createElement('div');
+                    modDiv.className = 'module';
+                    modDiv.id = id;
+                    modDiv.textContent = m;
+                    
+                    // Steuerung
+                    modDiv.onclick = (e) => toggleModule(id);
+                    modDiv.ondblclick = (e) => openSettings(m);
+                    
+                    // iPad Hold für Settings
+                    let tTimer;
+                    modDiv.ontouchstart = () => { tTimer = setTimeout(() => openSettings(m), 700); };
+                    modDiv.ontouchend = () => clearTimeout(tTimer);
+
+                    container.appendChild(modDiv);
+                });
+                
+                win.appendChild(container);
+                document.body.appendChild(win);
+                makeDraggable(win, header);
+
+                x += 190; count++;
+                if(count >= 4) { x = 20; y += 320; count = 0; }
+            }
+        }
+
+        function toggleDropdown(win) {
+            let container = win.querySelector('.module-container');
+            container.classList.toggle('closed');
+        }
+
+        function toggleModule(id) {
+            modStates[id] = !modStates[id];
+            document.getElementById(id).classList.toggle('active');
+        }
+
+        function openFriends() {
+            document.getElementById('friends-panel').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+            renderFriends();
+        }
+
+        function addFriend() {
+            let n = document.getElementById('friend-name').value;
+            if(n && !friends.includes(n)) { friends.push(n); document.getElementById('friend-name').value = ''; renderFriends(); }
+        }
+
+        function renderFriends() {
+            document.getElementById('friends-list').innerHTML = friends.map(f => `<span class="friend-tag">${f}</span>`).join('');
+        }
+
+        function openSettings(name) {
+            document.getElementById('set-title').textContent = name + " SETTINGS";
+            let c = document.getElementById('set-content');
+            if(name === "ESP") {
+                c.innerHTML = `
+                    <div class="setting-row"><span>Ignore Friends</span><input type="checkbox" checked></div>
+                    <div class="setting-row"><span>Show Players</span><input type="checkbox" checked></div>
+                    <div class="setting-row"><span>Show Mobs</span><input type="checkbox"></div>
+                    <div class="setting-row"><span>Friend Color</span><input type="color" value="#5865f2"></div>
+                `;
+            } else {
+                c.innerHTML = `<div class="setting-row"><span>Value</span><input type="range" min="1" max="10" value="5"></div>
+                               <div class="setting-row"><span>Mode</span><select style="background:#222;color:white;border:none;"><option>Bypass</option><option>Legit</option></select></div>`;
+            }
+            document.getElementById('settings-panel').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function closeAll() {
+            document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function filter() {
+            let s = document.getElementById('search-bar').value.toLowerCase();
+            document.querySelectorAll('.module').forEach(m => {
+                m.style.display = m.textContent.toLowerCase().includes(s) ? 'block' : 'none';
+            });
+        }
+
+        function makeDraggable(win, header) {
+            let drag = false, ox, oy;
+            const start = (e) => { 
+                if(e.target !== header) return;
+                drag = true; let c = e.touches ? e.touches[0] : e; 
+                ox = c.clientX - win.offsetLeft; oy = c.clientY - win.offsetTop; 
+                win.style.zIndex = 1000;
+            };
+            const move = (e) => { 
+                if(!drag) return; let c = e.touches ? e.touches[0] : e; 
+                win.style.left = (c.clientX-ox)+'px'; win.style.top = (c.clientY-oy)+'px'; 
+            };
+            const stop = () => { drag = false; win.style.zIndex = 10; };
+            header.addEventListener('mousedown', start); header.addEventListener('touchstart', start);
+            window.addEventListener('mousemove', move); window.addEventListener('touchmove', move);
+            window.addEventListener('mouseup', stop); window.addEventListener('touchend', stop);
+        }
+
+        init();
+    </script>
+</body>
+</html>
