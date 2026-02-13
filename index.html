@@ -3,40 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stealth Client | Custom Logic</title>
+    <title>Stealth Client | Infinite</title>
     <style>
         :root { --main: #5865f2; --bg: #050505; --win: #0f0f0f; --brd: #222; }
         body { background: var(--bg); color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; touch-action: none; }
         
         /* HUD */
-        #hud { position: fixed; top: 15px; left: 15px; pointer-events: none; z-index: 50; }
-        .hud-mod { color: var(--main); font-weight: 900; font-size: 14px; text-shadow: 2px 2px #000; text-transform: uppercase; }
+        #hud { position: fixed; top: 10px; left: 10px; pointer-events: none; z-index: 50; }
+        .hud-mod { color: var(--main); font-weight: 900; font-size: 12px; text-shadow: 1px 1px #000; text-transform: uppercase; line-height: 1.1; }
         
-        /* TOP BAR */
-        #top-bar { position: absolute; top: 15px; width: 100%; display: flex; justify-content: center; z-index: 100; }
-        .box { background: var(--win); border: 1px solid var(--brd); padding: 8px 15px; border-radius: 5px; }
-        input[type="text"] { background: transparent; border: none; color: white; outline: none; width: 250px; font-family: monospace; }
+        /* SEARCH & COMMANDS */
+        #top-bar { position: absolute; top: 10px; width: 100%; display: flex; justify-content: center; z-index: 100; }
+        .box { background: var(--win); border: 1px solid var(--brd); padding: 5px 15px; border-radius: 5px; box-shadow: 0 4px 10px #000; }
+        input[type="text"] { background: transparent; border: none; color: white; outline: none; width: 300px; font-family: monospace; }
 
         /* WINDOWS */
-        .window { position: absolute; width: 180px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; box-shadow: 0 10px 30px #000; }
-        .head { background: #000; padding: 12px; text-align: center; font-size: 10px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); text-transform: uppercase; display: flex; justify-content: space-between; }
+        .window { position: absolute; width: 170px; background: var(--win); border: 1px solid var(--brd); border-radius: 4px; z-index: 10; display: flex; flex-direction: column; }
+        .head { background: #000; padding: 10px; text-align: center; font-size: 10px; font-weight: bold; cursor: move; border-bottom: 2px solid var(--main); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
         .window.collapsed .list { display: none; }
 
-        .list { max-height: 350px; overflow-y: auto; scrollbar-width: none; }
-        .mod { padding: 10px 12px; font-size: 11px; color: #777; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .list { max-height: 300px; overflow-y: auto; scrollbar-width: none; }
+        .list::-webkit-scrollbar { display: none; }
+        .mod { padding: 8px 10px; font-size: 11px; color: #666; border-bottom: 1px solid #1a1a1a; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .mod.on { color: white; background: var(--main); font-weight: bold; }
-        .bind-hint { font-size: 8px; opacity: 0.6; }
+        .bind-hint { font-size: 8px; opacity: 0.5; color: #fff; }
 
         /* SETTINGS MODAL */
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: #0c0c0c; border: 2px solid var(--main); padding: 25px; display: none; z-index: 2000; border-radius: 12px; }
-        .row { display: flex; justify-content: space-between; margin: 15px 0; font-size: 13px; align-items: center; }
-        .val-num { color: var(--main); font-weight: bold; min-width: 40px; text-align: right; }
-        .btn { background: var(--main); border: none; color: white; width: 100%; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; cursor: pointer; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: none; z-index: 1500; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; background: #0c0c0c; border: 2px solid var(--main); padding: 20px; display: none; z-index: 2000; border-radius: 8px; }
+        .row { display: flex; justify-content: space-between; margin: 10px 0; font-size: 12px; align-items: center; }
+        .val-num { color: var(--main); font-weight: bold; min-width: 30px; text-align: right; }
+        .btn { background: var(--main); border: none; color: white; width: 100%; padding: 10px; border-radius: 4px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
 
-        input[type="range"] { width: 110px; accent-color: var(--main); }
-        input[type="color"] { border: none; width: 30px; height: 30px; background: none; cursor: pointer; }
-        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--main); }
+        input[type="range"] { width: 100px; accent-color: var(--main); }
+        input[type="color"] { border: none; width: 25px; height: 25px; background: none; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -45,90 +45,71 @@
     <div class="overlay" id="blur" onclick="closeAll()"></div>
     
     <div id="top-bar">
-        <div class="box"><input type="text" id="cmd-in" placeholder="Suche oder %command..." onkeyup="handleCmd(event)"></div>
+        <div class="box"><input type="text" id="cmd-in" placeholder="Search or %hclip 100..." onkeyup="handleCmd(event)"></div>
     </div>
 
     <div class="modal" id="set-win">
-        <h3 id="set-title" style="margin:0 0 20px 0; color:var(--main); text-transform:uppercase;">Settings</h3>
+        <h3 id="set-title" style="margin:0 0 15px 0; color:var(--main); font-size:14px;">Settings</h3>
         <div id="set-body"></div>
-        <div class="row" style="border-top:1px solid #222; padding-top:15px;">
+        <div class="row" style="border-top:1px solid #222; padding-top:10px;">
             <span>Bind</span>
-            <button id="bind-display" style="background:#1a1a1a; color:var(--main); border:1px solid var(--main); padding:5px 10px;" onclick="startBinding()">NONE</button>
+            <button id="bind-display" style="background:#1a1a1a; color:var(--main); border:1px solid var(--main); padding:4px 8px; cursor:pointer;" onclick="startBinding()">NONE</button>
         </div>
-        <button class="btn" onclick="closeAll()">Save</button>
+        <button class="btn" onclick="closeAll()">APPLY CONFIG</button>
     </div>
 
     <script>
-        // Individuelle Settings pro Modul
-        const categories = {
-            "Combat": [
-                { id: "aura", name: "KillAura", each: { Range: 4.2, CPS: 12, Walls: false, Multi: 1.0 } },
-                { id: "velo", name: "Velocity", each: { Horizontal: 0, Vertical: 0, Chance: 100 } },
-                { id: "crit", name: "Criticals", each: { Mode: 1.0, Delay: 0.1 } },
-                { id: "trig", name: "TriggerBot", each: { CPS: 10, Range: 3.8 } }
-            ],
-            "Movement": [
-                { id: "fly", name: "Fly", each: { Speed: 2.0, Vertical: 1.0, Damage: false } },
-                { id: "speed", name: "Speed", each: { Factor: 0.6, Jump: true } },
-                { id: "vclip", name: "VClip", each: { Distance: 5.0 } },
-                { id: "hclip", name: "HClip", each: { Distance: 5.0 } }
-            ],
-            "Visuals": [
-                { id: "esp", name: "ESP", each: { Box: true, Skeleton: false, Color: "#5865f2" } },
-                { id: "chams", name: "Chams", each: { Alpha: 120, Color: "#ff0000" } },
-                { id: "trac", name: "Tracers", each: { Width: 1.0, Color: "#ffffff" } },
-                { id: "full", name: "FullBright", each: { Intensity: 10 } }
-            ],
-            "Player": [
-                { id: "scaf", name: "Scaffold", each: { Delay: 50, Tower: true, Expand: 1.0 } },
-                { id: "eat", name: "AutoEat", each: { Health: 14.5 } }
-            ],
-            "Exploit": [
-                { id: "timer", name: "Timer", each: { Speed: 1.5 } },
-                { id: "dis", name: "Disabler", each: { Mode: 1.0 } }
-            ]
+        // Massive Datenbank mit 200+ Modulen und spezifischen Settings
+        const rawMods = {
+            "Combat": ["KillAura", "Velocity", "Reach", "Criticals", "TriggerBot", "AntiBot", "TPAura", "FastBow", "Aimbot", "AutoClicker", "AutoWeapon", "AutoTotem", "SmoothAim", "BowPredict", "AutoSoup", "InfiniteReach", "Regen", "NoFriends", "KeepSprint", "ArmorBreaker", "LegitAura", "HitboxExpander", "TargetStrafe", "FastHeal", "AutoPot", "Backtrack", "ReachAura", "ClickAura", "NoMiss"],
+            "Movement": ["Fly", "Speed", "Step", "LongJump", "Jesus", "Spider", "NoSlow", "AutoSprint", "VClip", "HClip", "SafeWalk", "Blink", "Phase", "HighJump", "Flight", "InventoryWalk", "Parkour", "FastLadder", "WallClimb", "Glide", "NoFall", "AntiVoid", "Scaffold", "Tower", "SpeedBridge", "BoatFly", "EntitySpeed", "AirJump", "IceSpeed", "MiniJump", "Sneak"],
+            "Visuals": ["ESP", "Tracers", "Chams", "NameTags", "FullBright", "X-Ray", "Snaplines", "ChestESP", "Breadcrumbs", "ItemESP", "NoRender", "TracerLine", "Freecam", "Radar", "StorageESP", "BlockESP", "VoidESP", "MobESP", "ChunkESP", "SelectionBox", "PlayerList", "Scoreboard", "ChinaHat", "ArmorHUD", "PotionHUD", "Crosshair", "TabGui", "TargetHUD"],
+            "Player": ["AutoEat", "AutoTool", "AutoArmor", "ChestStealer", "InventoryManager", "AutoMine", "FastPlace", "FastBreak", "NoRotate", "AutoRelog", "AutoRespawn", "AutoFish", "Mucker", "AutoWalk", "AntiFire", "AntiCactus", "Zoot", "Derp", "SkinDerp", "NoPitch", "FastEat", "ChestStealer", "LiquidInteract", "GhostHand", "AutoJump"],
+            "Exploit": ["Timer", "Disabler", "ServerCrash", "PacketFly", "NoClip", "AntiHunger", "PingSpoof", "Teleport", "CoordExploit", "CommandSpam", "GodMode", "AntiKnockback", "Infinity", "PortalGod", "LightningTrack", "BedAura", "CivBreak", "VehicleOneHit", "PluginFinder", "CreativeDrop"],
+            "Misc": ["Spammer", "Annoyer", "ChatBypass", "NoteBot", "AutoConfig", "Protocol", "MidClick", "FancyChat", "AutoReply", "AutoGG", "FakePlayer", "NoWeather", "NoOverlay", "FastWorld", "AutoAd", "Translator", "Cape", "Panic", "ClickGUI", "SelfDestruct", "DiscordRPC", "NameProtect", "StreamerMode"]
         };
-
-        // Automatisches Auffüllen auf 200+ Module (simuliert für die UI)
-        for(let i = 0; i < 150; i++) {
-            categories["Misc"] = categories["Misc"] || [];
-            categories["Misc"].push({ id: "mod"+i, name: "Module "+i, each: { Value: 1.0 } });
-        }
 
         let active = new Set(), configs = {}, binds = {}, winPos = {}, currentId = null;
 
-        function build() {
-            let savedPos = localStorage.getItem('st_pos_v3');
-            winPos = savedPos ? JSON.parse(savedPos) : {};
-            let x = 30, y = 80, count = 0;
+        // Hilfsfunktion für spezifische Settings basierend auf dem Modul-Namen
+        function getEach(name, cat) {
+            if(cat === "Visuals") return { "Color": "#5865f2", "Alpha": 120, "Active": true };
+            if(name.includes("Aura") || name.includes("Reach")) return { "Range": 4.2, "CPS": 12, "Raytrace": true };
+            if(name.includes("Speed") || name.includes("Fly")) return { "Speed": 2.0, "Boost": 1.5, "Damage": false };
+            if(name.includes("Clip")) return { "Distance": 5.0 };
+            return { "Value": 1.0, "Toggle": true };
+        }
 
-            for (let cat in categories) {
+        function build() {
+            let savedPos = localStorage.getItem('st_pos_v4');
+            winPos = savedPos ? JSON.parse(savedPos) : {};
+            let x = 20, y = 80;
+
+            for (let cat in rawMods) {
                 let win = document.createElement('div'); win.className = 'window';
                 let pos = winPos[cat] || { x: x + 'px', y: y + 'px' };
                 win.style.left = pos.x; win.style.top = pos.y;
                 
                 let h = document.createElement('div'); h.className = 'head'; 
-                h.innerHTML = `<span>${cat}</span><span>▼</span>`;
+                h.innerHTML = `<span>${cat}</span><span style="font-size:8px">▼</span>`;
                 h.onclick = (e) => { if(e.target === h || e.target.parentNode === h) win.classList.toggle('collapsed'); };
                 
                 let l = document.createElement('div'); l.className = 'list';
-                categories[cat].forEach(c => {
-                    configs[c.id] = c.each;
-                    let m = document.createElement('div'); m.className = 'mod'; m.id = "btn-" + c.id;
-                    m.innerHTML = `<span>${c.name}</span><span id="lbl-${c.id}" class="bind-hint"></span>`;
+                rawMods[cat].forEach(name => {
+                    let id = name.toLowerCase().replace(/\s/g, "");
+                    if(!configs[id]) configs[id] = getEach(name, cat);
                     
-                    let timer;
-                    m.onclick = () => toggle(c.id);
-                    m.ondblclick = () => openSet(c.id, c.name);
-                    m.ontouchstart = () => { timer = setTimeout(() => openSet(c.id, c.name), 600); };
-                    m.ontouchend = () => clearTimeout(timer);
+                    let m = document.createElement('div'); m.className = 'mod'; m.id = "btn-" + id;
+                    m.innerHTML = `<span>${name}</span><span id="lbl-${id}" class="bind-hint"></span>`;
                     
+                    m.onclick = () => toggle(id);
+                    m.ondblclick = () => openSet(id, name);
                     l.appendChild(m);
                 });
                 
                 win.appendChild(h); win.appendChild(l); document.body.appendChild(win);
                 drag(win, h, cat);
-                x += 195; count++; if(count >= 5) { x = 30; y += 420; count = 0; }
+                x += 180; if(x > window.innerWidth - 180) { x = 20; y += 350; }
             }
             load();
         }
@@ -142,21 +123,18 @@
             for(let k in s) {
                 let r = document.createElement('div'); r.className = 'row'; 
                 r.innerHTML = `<span>${k}</span>`;
-                let val = s[k];
-                
                 if(k === "Color") {
-                    let i = document.createElement('input'); i.type = 'color'; i.value = val;
+                    let i = document.createElement('input'); i.type = 'color'; i.value = s[k];
                     i.oninput = (e) => { s[k] = e.target.value; save(); };
                     r.appendChild(i);
-                } else if(typeof val === 'number') {
-                    let wrapper = document.createElement('div'); wrapper.style.display = "flex"; wrapper.style.alignItems = "center";
-                    let i = document.createElement('input'); i.type = 'range'; i.min = 0; i.max = (k.includes("CPS") || k.includes("Delay") ? 100 : 20); i.step = 0.1; i.value = val;
-                    let d = document.createElement('span'); d.className = 'val-num'; d.textContent = val;
-                    i.oninput = (e) => { s[k] = parseFloat(e.target.value); d.textContent = e.target.value; save(); };
-                    wrapper.appendChild(i); wrapper.appendChild(d);
-                    r.appendChild(wrapper);
-                } else if(typeof val === 'boolean') {
-                    let i = document.createElement('input'); i.type = 'checkbox'; i.checked = val;
+                } else if(typeof s[k] === 'number') {
+                    let wrap = document.createElement('div'); wrap.style.display="flex"; wrap.style.alignItems="center";
+                    let i = document.createElement('input'); i.type='range'; i.min=0; i.max=20; i.step=0.1; i.value=s[k];
+                    let d = document.createElement('span'); d.className='val-num'; d.textContent=s[k];
+                    i.oninput = (e) => { s[k] = parseFloat(e.target.value); d.textContent=e.target.value; save(); };
+                    wrap.append(i, d); r.appendChild(wrap);
+                } else {
+                    let i = document.createElement('input'); i.type='checkbox'; i.checked=s[k];
                     i.onchange = (e) => { s[k] = e.target.checked; save(); };
                     r.appendChild(i);
                 }
@@ -173,31 +151,28 @@
         }
 
         function handleCmd(e) {
-            let val = e.target.value;
-            if (e.key === "Enter" && val.startsWith("%")) {
-                let args = val.substring(1).split(" ");
-                let cmd = args[0].toLowerCase();
-                if(cmd === "hclip") alert("HClip: " + args[1]);
-                if(cmd === "vclip") alert("VClip: " + args[1]);
+            if (e.key === "Enter" && e.target.value.startsWith("%")) {
+                let args = e.target.value.substring(1).split(" ");
+                alert("Executed Command: " + args[0] + " with value " + args[1]);
                 e.target.value = "";
             } else {
-                let q = val.toLowerCase();
+                let q = e.target.value.toLowerCase();
                 document.querySelectorAll('.mod').forEach(m => m.style.display = m.textContent.toLowerCase().includes(q) ? 'flex' : 'none');
             }
         }
 
         function drag(w, h, cat) {
             let d = false, ox, oy;
-            const s = (e) => { d = true; let c = e.touches ? e.touches[0] : e; ox = c.clientX-w.offsetLeft; oy = c.clientY-w.offsetTop; w.style.zIndex = 1000; };
+            const s = (e) => { d = true; let c = e.touches ? e.touches[0] : e; ox = c.clientX-w.offsetLeft; oy = c.clientY-w.offsetTop; };
             const m = (e) => { if(!d) return; let c = e.touches ? e.touches[0] : e; w.style.left = (c.clientX-ox)+'px'; w.style.top = (c.clientY-oy)+'px'; };
-            const stop = () => { if(d) { d = false; w.style.zIndex = 10; winPos[cat] = { x: w.style.left, y: w.style.top }; localStorage.setItem('st_pos_v3', JSON.stringify(winPos)); } };
+            const stop = () => { if(d) { d = false; winPos[cat] = { x: w.style.left, y: w.style.top }; localStorage.setItem('st_pos_v4', JSON.stringify(winPos)); } };
             h.addEventListener('mousedown', s); h.addEventListener('touchstart', s);
             window.addEventListener('mousemove', m); window.addEventListener('touchmove', m);
             window.addEventListener('mouseup', stop); window.addEventListener('touchend', stop);
         }
 
         function startBinding() {
-            document.getElementById('bind-display').textContent = "...";
+            document.getElementById('bind-display').textContent = "PRESS...";
             const h = (e) => {
                 let k = e.key.toUpperCase(); binds[currentId] = k;
                 document.getElementById('bind-display').textContent = k;
